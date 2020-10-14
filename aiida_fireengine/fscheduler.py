@@ -38,7 +38,7 @@ class FwScheduler(SgeScheduler):
         computer_id = self.transport._machine  # Host name is used as the identifier
         lpad = self.lpad
         query = {
-            "spec._aiida_computer": computer_id,
+            "spec._aiida_info.computer_id": computer_id,
             "state": {"$in": ["PAUSED", "WAITING", "READY", "RESERVED", "RUNNING"]}
         }
         
