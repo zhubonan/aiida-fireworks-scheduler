@@ -12,10 +12,12 @@ from aiida.common.extendeddicts import AttributeDict
 from fireworks.core.rocket_launcher import launch_rocket
 from aiida_fireengine.fscheduler import FwJobResource, FwScheduler, parse_sge_script
 from aiida_fireengine.jobs import AiiDAJobFirework
-from aiida.schedulers.datastructures import (JobInfo, JobState, ParEnvJobResource)
+from aiida.schedulers.datastructures import (JobInfo, JobState,
+                                             ParEnvJobResource)
 import shutil
 
 TEST_DIR = os.path.dirname(os.path.realpath(__file__))
+
 
 @contextlib.contextmanager
 def keep_cwd():
@@ -29,7 +31,8 @@ def keep_cwd():
 def dummy_job(clean_launchpad):
     """Create a dummy job"""
 
-    job = AiiDAJobFirework('localhost', '/tmp/aiida-test', 
+    job = AiiDAJobFirework('localhost',
+                           '/tmp/aiida-test',
                            'aiida-1',
                            '_aiidasubmit.sh',
                            walltime=1800,
@@ -49,7 +52,7 @@ def test_job_init(dummy_job, launchpad):
     assert fw_dict['spec']['_aiida_job_info']['computer_id'] == 'localhost'
     script_content = fw_dict['spec']['_tasks'][0]['script']
     assert script_content == 'chmod +x _aiidasubmit.sh && ./_aiidasubmit.sh > _scheduler-stdout.txt 2> _scheduler-stderr.txt'
-    
+
 
 def test_job_run(dummy_job, launchpad):
     """
@@ -75,6 +78,7 @@ def test_job_run(dummy_job, launchpad):
 
     # Clean up the tempdiretory
     shutil.rmtree(str(ldir))
+
 
 def test_get_jobs(dummy_job, launchpad):
     """Test the get_jobs method"""
@@ -103,9 +107,10 @@ def test_get_jobs(dummy_job, launchpad):
     jobs = scheduler.get_jobs(jobs=[str(fw_id)])
     assert len(jobs) == 0
 
+
 def test_parse_script():
     """Test parsing script"""
-    options = parse_sge_script( (Path(TEST_DIR) / 'data') / '_aiidasubmit.sh')
+    options = parse_sge_script((Path(TEST_DIR) / 'data') / '_aiidasubmit.sh')
 
     assert options['job_name'] == 'aiida-340981'
     assert options['stdout_fname'] == '_scheduler-stdout.txt'
