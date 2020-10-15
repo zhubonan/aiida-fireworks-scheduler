@@ -4,15 +4,18 @@ Test for the scheduler
 
 import pytest
 from pathlib import Path
+import tempfile
 import contextlib
 import os
 
 from aiida.common.extendeddicts import AttributeDict
 from fireworks.core.rocket_launcher import launch_rocket
-from aiida_fireengine.fscheduler import FwJobResource, FwScheduler
+from aiida_fireengine.fscheduler import FwJobResource, FwScheduler, parse_sge_script
 from aiida_fireengine.jobs import AiiDAJobFirework
 from aiida.schedulers.datastructures import (JobInfo, JobState, ParEnvJobResource)
 import shutil
+
+TEST_DIR = os.path.dirname(os.path.realpath(__file__))
 
 @contextlib.contextmanager
 def keep_cwd():
@@ -100,4 +103,12 @@ def test_get_jobs(dummy_job, launchpad):
     jobs = scheduler.get_jobs(jobs=[str(fw_id)])
     assert len(jobs) == 0
 
+def test_parse_script():
+    """Test parsing script"""
+    options = parse_sge_script( (Path(TEST_DIR) / 'data') / '_aiidasubmit.sh')
 
+    assert options['job_name'] == 'aiida-340981'
+    assert options['stdout_fname'] == '_scheduler-stdout.txt'
+    assert options['stderr_fname'] == '_scheduler-stderr.txt'
+    assert options['mpinp'] == 24
+    assert options['walltime'] == 8 * 3600

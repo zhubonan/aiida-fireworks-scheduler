@@ -2,7 +2,7 @@
 Specialised scheduler to interface with Fireworks
 """
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from aiida.common.exceptions import FeatureNotAvailable
 from aiida.common.folders import SandboxFolder
@@ -123,7 +123,7 @@ class FwScheduler(SgeScheduler):
         with SandboxFolder() as sandbox:
             self.transport.getfile(submit_script, sandbox.get_abs_path(submit_script))
 
-        options = parse_sge_script(working_directory, sandbox.get_abs_path(submit_script))
+        options = parse_sge_script(sandbox.get_abs_path(submit_script))
 
         firework = AiiDAJobFirework(
             computer_id=self.transport._machine,
@@ -178,7 +178,7 @@ class FwScheduler(SgeScheduler):
         raise FeatureNotAvailable
 
 
-def parse_sge_script(remote_working_path, local_script_path):
+def parse_sge_script(local_script_path):
     """
     Parse the SGE script
 
@@ -189,7 +189,7 @@ def parse_sge_script(remote_working_path, local_script_path):
         lines = handle.readlines()
 
     options = {
-        'stcout_fname': '_scheduler-stdout.txt',
+        'stdout_fname': '_scheduler-stdout.txt',
         'stderr_fname': '_scheduler-stderr.txt',
     }
     for line in lines:
@@ -204,7 +204,7 @@ def parse_sge_script(remote_working_path, local_script_path):
         if 'h_rt' in line:
             timestring = line.split('=')[1].strip()
             runtime = datetime.strptime(timestring, "%H:%M:%S")
-            runtime = datetime.timedelta(hours=runtime.hour, minutes=runtime.minute, seconds=runtime.second)
+            runtime = timedelta(hours=runtime.hour, minutes=runtime.minute, seconds=runtime.second)
             options['walltime'] = int(runtime.total_seconds())
 
     return options
