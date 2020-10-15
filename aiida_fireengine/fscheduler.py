@@ -39,9 +39,12 @@ class FwScheduler(SgeScheduler):
 
     _job_resource_class = FwJobResource
 
-    def __init__(self):
+    def __init__(self, launchpad=None):
         super().__init__()
-        self.lpad = LaunchPad.from_file(LAUNCHPAD_LOC)
+        if launchpad is None:
+            self.lpad = LaunchPad.from_file(LAUNCHPAD_LOC)
+        else:
+            self.lpad = launchpad
         
     def get_jobs(self, jobs=None, user=None, as_dict=False):
         """
@@ -52,7 +55,7 @@ class FwScheduler(SgeScheduler):
 
 
         query = {
-            "spec._aiida_info.computer_id": computer_id,    # Limit to this machine
+            "spec._aiida_job_info.computer_id": computer_id,    # Limit to this machine
             "state": {"$in": ["PAUSED", "WAITING", "READY", "RESERVED", "RUNNING"]}
         }
 
@@ -92,12 +95,19 @@ class FwScheduler(SgeScheduler):
             
             # The created_on is mapped to the submission time
             try:
-                this_job.submission_time = datetime.datetime.strptime(fw_dict['created_on'], "%Y-%m-%dT%H:%M:%S.%f")
+                this_job.submission_time = datetime.strptime(fw_dict['created_on'], "%Y-%m-%dT%H:%M:%S.%f")
             except ValueError:
                 pass
             # TODO: add information about the dispatch time by looking into the launches
 
             joblist.append(this_job)
+
+        if as_dict:
+            jobdict = {job.job_id: job for job in joblist}
+            if None in jobdict:
+                raise SchedulerError('Found at least one job without jobid')
+            return jobdict
+
         return joblist
     
 
@@ -127,7 +137,7 @@ class FwScheduler(SgeScheduler):
         ) 
 
         mapping = self.lpad.add_wf(firework)
-        return str(mapping[-1])   # This is a string of the FW id assigned to the job 
+        return str(list(mapping.values())[0])   # This is a string of the FW id assigned to the job 
 
     def kill(self, jobid):
         """Defuse a job in the LaunchPad

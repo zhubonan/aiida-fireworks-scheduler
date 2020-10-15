@@ -4,18 +4,30 @@ Test for the scheduler
 
 import pytest
 from pathlib import Path
+import contextlib
+import os
 
+from aiida.common.extendeddicts import AttributeDict
 from fireworks.core.rocket_launcher import launch_rocket
 from aiida_fireengine.fscheduler import FwJobResource, FwScheduler
 from aiida_fireengine.jobs import AiiDAJobFirework
+from aiida.schedulers.datastructures import (JobInfo, JobState, ParEnvJobResource)
 import shutil
+
+@contextlib.contextmanager
+def keep_cwd():
+    """Context manager for keeping the current working directory"""
+    cwd = os.getcwd()
+    yield cwd
+    os.chdir(cwd)
+
 
 @pytest.fixture
 def dummy_job(clean_launchpad):
     """Create a dummy job"""
 
     job = AiiDAJobFirework('localhost', '/tmp/aiida-test', 
-                           1,
+                           'aiida-1',
                            '_aiidasubmit.sh',
                            walltime=1800,
                            mpinp=2,
@@ -40,7 +52,7 @@ def test_job_run(dummy_job, launchpad):
     """
     Test running a simple job script with
     `echo Foo > bar`.
-    
+
     """
     lpad = launchpad
     job_id = list(dummy_job.values())[0]
@@ -51,7 +63,8 @@ def test_job_run(dummy_job, launchpad):
 
     ldir.mkdir(parents=True, exist_ok=True)
     (ldir / '_aiidasubmit.sh').write_text("echo Foo > bar")
-    launch_rocket(launchpad, fw_id=job_id)
+    with keep_cwd():
+        launch_rocket(launchpad, fw_id=job_id)
 
     assert (ldir / 'bar').exists()
     assert (ldir / '_scheduler-stdout.txt').exists()
@@ -59,3 +72,32 @@ def test_job_run(dummy_job, launchpad):
 
     # Clean up the tempdiretory
     shutil.rmtree(str(ldir))
+
+def test_get_jobs(dummy_job, launchpad):
+    """Test the get_jobs method"""
+
+    fw_id = list(dummy_job.values())[0]
+    scheduler = FwScheduler(launchpad)
+    # Mock the transport object
+    scheduler.set_transport(AttributeDict({'_machine': 'localhost'}))
+
+    # List all jobs
+    jobs = scheduler.get_jobs()
+    assert isinstance(jobs[0], JobInfo)
+    assert len(jobs) == 1
+    assert jobs[0].job_id == fw_id
+    assert jobs[0].title == 'aiida-1'
+    assert jobs[0].job_state == JobState.QUEUED
+    previous_job = jobs[0]
+
+    # Find the exact job
+    jobs = scheduler.get_jobs(jobs=[str(fw_id)])
+    assert jobs[0] == previous_job
+
+    # Fire the rocket, now the job should dissapear
+    with keep_cwd():
+        launch_rocket(launchpad, fw_id=fw_id)
+    jobs = scheduler.get_jobs(jobs=[str(fw_id)])
+    assert len(jobs) == 0
+
+
