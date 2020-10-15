@@ -12,7 +12,7 @@ class AiiDAJobFirework(Firework):
     """
 
     def __init__(self, computer_id, 
-                       remote_work_dir, aiida_job_id,
+                       remote_work_dir, job_name,
                        submit_script_name, 
                        mpinp, walltime,
                        stdout_fname, stderr_fname):
@@ -37,6 +37,6 @@ class AiiDAJobFirework(Firework):
         script = f"chmod +x {submit_script_name} && ./{submit_script_name} > {stdout_fname} 2> {stderr_fname}"
         task = ScriptTask(script=script)
 
-        return super().__init__(tasks=[task], spec=spec, name=f"aiida-{aiida_job_id}")
+        return super().__init__(tasks=[task], spec=spec, name=job_name)
 
 
