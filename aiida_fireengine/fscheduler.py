@@ -3,6 +3,7 @@ Specialised scheduler to interface with Fireworks
 """
 
 from datetime import datetime, timedelta
+import os
 
 from aiida.common.exceptions import FeatureNotAvailable
 from aiida.common.folders import SandboxFolder
@@ -122,8 +123,7 @@ class FwScheduler(SgeScheduler):
         self.transport.chdir(working_directory)
         with SandboxFolder() as sandbox:
             self.transport.getfile(submit_script, sandbox.get_abs_path(submit_script))
-
-        options = parse_sge_script(sandbox.get_abs_path(submit_script))
+            options = parse_sge_script(sandbox.get_abs_path(submit_script))
 
         firework = AiiDAJobFirework(
             computer_id=self.transport._machine,
@@ -146,29 +146,31 @@ class FwScheduler(SgeScheduler):
         kill running ones....
         """
         try:
-            fw = self.lpad.defuse_fw(jobid)
+            fw_dict = self.lpad.get_fw_dict_by_id(int(jobid))
         except Exception:
             return False
-        else:
-            if fw:
+
+        # If the job is running - request to stop the job by putting a AIIDA_STOP file
+        # in the working directory
+        if fw_dict['state'] == 'RUNNING':
+            try:
+                launch_dir = fw_dict['spec']['_aiida_job_info']['_remote_work_dir']
+                stop_file = os.path.join(launch_dir, 'AIIDA_STOP')
+                self.transport.exec_command_wait(f'touch {stop_file}')
                 return True
-            else:
+            except Exception:
                 return False
-
-    def _get_workflow_from_script(self, working_directory, submit_script):
-        """
-        This method parses the submit script for the crucial information such as the job
-        run time and job names etc and build the WorkFlow accordingly
-
-        Things to be parsed:
-        
-        - timelimit
-        - number of cores
-        - job_name
-
-        :return: return a ``WorkFlow`` that is ready to be submitted to the ``LaunchPad``
-        """
-        raise NotImplementedError
+        # Otherwise just defuse the job in the launchpad
+        else:
+            try:
+                fw = self.lpad.defuse_fw(int(jobid))
+            except Exception:
+                return False
+            else:
+                if fw:
+                    return True
+                else:
+                    return False
 
 
     def get_detailed_job_info(self, job_id):

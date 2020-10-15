@@ -17,6 +17,7 @@ from aiida.schedulers.datastructures import (JobInfo, JobState,
 import shutil
 
 TEST_DIR = os.path.dirname(os.path.realpath(__file__))
+DATA_DIR = Path(TEST_DIR) / 'data'
 
 
 @contextlib.contextmanager
@@ -51,7 +52,7 @@ def test_job_init(dummy_job, launchpad):
     fw_dict = lpad.get_fw_dict_by_id(job_id)
     assert fw_dict['spec']['_aiida_job_info']['computer_id'] == 'localhost'
     script_content = fw_dict['spec']['_tasks'][0]['script']
-    assert script_content == 'chmod +x _aiidasubmit.sh && ./_aiidasubmit.sh > _scheduler-stdout.txt 2> _scheduler-stderr.txt'
+    assert './_aiidasubmit.sh > _scheduler-stdout.txt 2> _scheduler-stderr.txt &' in script_content
 
 
 def test_job_run(dummy_job, launchpad):
@@ -75,6 +76,9 @@ def test_job_run(dummy_job, launchpad):
     assert (ldir / 'bar').exists()
     assert (ldir / '_scheduler-stdout.txt').exists()
     assert (ldir / '_scheduler-stderr.txt').exists()
+
+    fw_dict = lpad.get_fw_dict_by_id(job_id)
+    assert fw_dict['state'] == 'COMPLETED'
 
     # Clean up the tempdiretory
     shutil.rmtree(str(ldir))
@@ -117,3 +121,74 @@ def test_parse_script():
     assert options['stderr_fname'] == '_scheduler-stderr.txt'
     assert options['mpinp'] == 24
     assert options['walltime'] == 8 * 3600
+
+
+def test_job_kill_while_run(dummy_job, launchpad):
+    """
+    Test job killing while running. Here run a command that will
+    output the AIIDA_STOP file mid-way, making the script getting
+    killed mid-way.
+    """
+    lpad = launchpad
+    job_id = list(dummy_job.values())[0]
+    fw_dict = lpad.get_fw_dict_by_id(job_id)
+
+    ldir = Path(fw_dict['spec']['_launch_dir'])
+    assert str(ldir) == '/tmp/aiida-test'
+
+    ldir.mkdir(parents=True, exist_ok=True)
+    (ldir / '_aiidasubmit.sh').write_text("echo Foo > bar; touch AIIDA_STOP; sleep 10 && touch foo")
+    with keep_cwd():
+        launch_rocket(launchpad, fw_id=job_id)
+
+    assert (ldir / 'bar').exists()
+    assert (ldir / '_scheduler-stdout.txt').exists()
+    assert (ldir / '_scheduler-stderr.txt').exists()
+    assert not (ldir / 'foo').exists()
+
+    fw_dict = lpad.get_fw_dict_by_id(job_id)
+    assert fw_dict['state'] == 'FIZZLED'
+
+
+    # Clean up the tempdiretory
+    shutil.rmtree(str(ldir))
+
+
+def test_kill(launchpad, dummy_job):
+    """Test killing jobs"""
+
+    job_id = str(list(dummy_job.values())[0])
+    scheulder = FwScheduler(launchpad)
+    assert scheulder.kill(job_id)
+
+    ids = launchpad.get_fw_ids(query={'state': 'READY'})
+    assert len(ids) == 0
+
+    ids = launchpad.get_fw_ids(query={'state': 'DEFUSED'})
+    assert len(ids) == 1
+
+
+def test_submit_job(clean_launchpad, clear_database_auto):
+    """Test submitting a job"""
+    tmpd = tempfile.mkdtemp()
+    class FakeTrans:
+
+        def __init__(self):
+            self._machine = 'localhost'
+
+        def chdir(self, dir):
+            """Mock chdir method"""
+            pass
+
+        def getfile(self, fname, localpath):
+            """Fake getfile method"""
+            shutil.copy(DATA_DIR / fname, localpath)
+            
+    scheduler = FwScheduler(clean_launchpad)
+    scheduler.set_transport(FakeTrans())
+    job_id = scheduler.submit_from_script('foo', '_aiidasubmit.sh')
+
+    assert job_id == '1'
+    
+    fw_ids = clean_launchpad.get_fw_ids({})
+    assert fw_ids[0] == 1
