@@ -47,7 +47,7 @@ class AiiDAJobFirework(Firework):
                 'walltime': walltime,  # in seconds
             },
             '_category':
-            computer_id,  # Category - at least we have to enforce running on the intended computer!
+            'AIIDA_RESERVED_CATEGORY',  # Category set it to a special values to indicate it is an AiiDA job
             '_launch_dir': remote_work_dir,
         }
 
