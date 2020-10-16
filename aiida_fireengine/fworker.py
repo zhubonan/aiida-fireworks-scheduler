@@ -70,7 +70,7 @@ class AiiDAFWorker(FWorker):
             'spec._aiida_job_info.mpinp': self.mpinp,
             'spec._aiida_job_info.computer_id': self.computer_id,
             'spec._aiida_job_info.walltime': {
-                '$lte': self.seconds_left - self.SECONDS_SAFE_INTERVAL
+                '$lt': self.seconds_left - self.SECONDS_SAFE_INTERVAL
             }
         }
 
@@ -82,7 +82,7 @@ class AiiDAFWorker(FWorker):
         """
         How long this job is going to be alive.
         """
-        self.sch_aware.get_remaining_seconds()
+        return self.sch_aware.get_remaining_seconds()
 
     @recursive_serialize
     def to_dict(self):
