@@ -2,14 +2,15 @@
 Test the AiiDAFWworker
 """
 
-from aiida_fireengine.fworker import AiiDAFWorker
 import pytest
+from aiida_fireengine.fworker import AiiDAFWorker
+# pylint: disable=redefined-outer-name
 
 
 @pytest.fixture
 def worker():
     """A worker"""
-    return AiiDAFWorker("localhost", 4, category='test')
+    return AiiDAFWorker("localhost", username='user', mpinp=4, category='test')
 
 
 def test_worker_query(worker):
@@ -29,6 +30,7 @@ def test_worker_query(worker):
         ) - worker.SECONDS_SAFE_INTERVAL
     assert aiida_query['spec._aiida_job_info.computer_id'] == 'localhost'
     assert aiida_query['spec._aiida_job_info.mpinp'] == 4
+    assert aiida_query['spec._aiida_job_info.username'] == 'user'
 
 
 def test_worker_serialise(worker):

@@ -12,21 +12,27 @@ from fireworks.utilities.fw_serializers import recursive_serialize, \
 
 from aiida_fireengine.awareness import SchedulerAwareness
 
+
 class AiiDAFWorker(FWorker):
     """
     Specialised worker for running AiiDA related jobs
     """
     SECONDS_SAFE_INTERVAL = 60
 
-    def __init__(self, computer_id, mpinp, *args, **kwargs):
+    def __init__(self, computer_id, username, mpinp, *args, **kwargs):
         """
-        Instantiate a AiiDAFWorker object
-        :param mpinp (int): the number of MPI processes to run.
-        :param sch_obj (object): an object for interfacing with the scheduler and get run time limits.
+        Instantiate a AiiDAFWorker object.
+        The worker selects the jobs to run using the criteria defined in the
+        constructor
 
-        The rest of the arguments will be passed to the `FWorker`
+        :param computer_id (str): Hostname of the computer
+        :param username (str): User name for the computer
+        :param mpinp (int): the number of MPI processes to be launched.
+
+        The rest of the arguments will be passed to the `FWorker`.
         """
         self.computer_id = computer_id
+        self.username = username
         self.sch_aware = SchedulerAwareness.get_awareness()
         self.mpinp = mpinp
         super().__init__(*args, **kwargs)
@@ -69,6 +75,7 @@ class AiiDAFWorker(FWorker):
         query_aiida = {
             'spec._aiida_job_info.mpinp': self.mpinp,
             'spec._aiida_job_info.computer_id': self.computer_id,
+            'spec._aiida_job_info.username': self.username,
             'spec._aiida_job_info.walltime': {
                 '$lt': self.seconds_left - self.SECONDS_SAFE_INTERVAL
             }
@@ -92,6 +99,7 @@ class AiiDAFWorker(FWorker):
             'query': json.dumps(self._query, default=DATETIME_HANDLER),
             'env': self.env,
             'computer_id': self.computer_id,
+            'username': self.username,
             'mpinp': self.mpinp,
         }
 
@@ -99,6 +107,7 @@ class AiiDAFWorker(FWorker):
     @recursive_deserialize
     def from_dict(cls, m_dict):
         return AiiDAFWorker(computer_id=m_dict['computer_id'],
+                            username=m_dict['username'],
                             mpinp=m_dict['mpinp'],
                             name=m_dict['name'],
                             category=m_dict['category'],

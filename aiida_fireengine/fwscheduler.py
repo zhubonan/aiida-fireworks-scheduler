@@ -5,17 +5,21 @@ Specialised scheduler to interface with Fireworks
 from datetime import datetime, timedelta
 import os
 
-from aiida.common.exceptions import FeatureNotAvailable
-from aiida.common.folders import SandboxFolder
-import aiida.schedulers 
-from aiida.schedulers.plugins.sge import SgeScheduler
-from aiida.schedulers import SchedulerError, SchedulerParsingError
-from aiida.schedulers.datastructures import (JobInfo, JobState, ParEnvJobResource)
-
 from fireworks.core.launchpad import LaunchPad
 from fireworks.fw_config import LAUNCHPAD_LOC
 
+import aiida.schedulers
+from aiida.common.exceptions import FeatureNotAvailable
+from aiida.common.folders import SandboxFolder
+from aiida.common.extendeddicts import AttributeDict
+from aiida.schedulers.plugins.sge import SgeScheduler
+from aiida.schedulers import SchedulerError, SchedulerParsingError
+from aiida.schedulers.datastructures import (JobInfo, JobState,
+                                             ParEnvJobResource)
+
 from aiida_fireengine.jobs import AiiDAJobFirework
+
+# pylint: disable=protected-access,
 
 _MAP_STATUS_FW = {
     'PAUSED': JobState.QUEUED_HELD,
@@ -25,8 +29,41 @@ _MAP_STATUS_FW = {
     'RUNNING': JobState.RUNNING
 }
 
+
 class FwJobResource(ParEnvJobResource):
-    pass
+    """
+    `JobResource` for the FwScheduler based on `ParEnvJobResource`.
+    The difference is that the default `parallel_env` file default to "mpi" here,
+    and it is OK to have it not set.
+    """
+    @classmethod
+    def validate_resources(cls, **kwargs):
+        """Validate the resources against the job resource class of this scheduler.
+
+        :param kwargs: dictionary of values to define the job resources
+        :return: attribute dictionary with the parsed parameters populated
+        :raises ValueError: if the resources are invalid or incomplete
+        """
+        resources = AttributeDict()
+
+        resources.parallel_env = kwargs.pop('parallel_env', 'mpi')
+
+        try:
+            resources.tot_num_mpiprocs = int(kwargs.pop('tot_num_mpiprocs'))
+        except (KeyError, ValueError):
+            raise ValueError(
+                '`tot_num_mpiprocs` must be specified and must be an integer')
+
+        if resources.tot_num_mpiprocs < 1:
+            raise ValueError(
+                '`tot_num_mpiprocs` must be greater than or equal to one.')
+
+        if kwargs:
+            raise ValueError('these parameters were not recognized: {}'.format(
+                ', '.join(list(kwargs.keys()))))
+
+        return resources
+
 
 class FwScheduler(SgeScheduler):
     """
@@ -35,7 +72,7 @@ class FwScheduler(SgeScheduler):
     _logger = aiida.schedulers.Scheduler._logger.getChild('Fw')
 
     _features = {
-        'can_query_by_user': False,   # Cannot query by user - only by just list
+        'can_query_by_user': False,  # Cannot query by user - only by just list
     }
 
     _job_resource_class = FwJobResource
@@ -46,7 +83,7 @@ class FwScheduler(SgeScheduler):
             self.lpad = LaunchPad.from_file(LAUNCHPAD_LOC)
         else:
             self.lpad = launchpad
-        
+
     def get_jobs(self, jobs=None, user=None, as_dict=False):
         """
         Return the list of currently active jobs
@@ -54,18 +91,20 @@ class FwScheduler(SgeScheduler):
         computer_id = self.transport._machine  # Host name is used as the identifier
         lpad = self.lpad
 
-
         query = {
-            "spec._aiida_job_info.computer_id": computer_id,    # Limit to this machine
-            "state": {"$in": ["PAUSED", "WAITING", "READY", "RESERVED", "RUNNING"]}
+            "spec._aiida_job_info.computer_id":
+            computer_id,  # Limit to this machine
+            "state": {
+                "$in": ["PAUSED", "WAITING", "READY", "RESERVED", "RUNNING"]
+            }
         }
 
         # Limit to the specific fw_ids
         if jobs:
             # Convert to integer keys
             jobs = [int(job_id) for job_id in jobs]
-            query['fw_id'] = {'$in': jobs}                      
-        
+            query['fw_id'] = {'$in': jobs}
+
         fw_ids = lpad.get_fw_ids(query)
         joblist = []
         for fid in fw_ids:
@@ -93,13 +132,14 @@ class FwScheduler(SgeScheduler):
                 this_job.queue_name = category
             elif isinstance(category, (tuple, list)):
                 this_job.queue_name = ":".join(category)
-            
+
             # The created_on is mapped to the submission time
             try:
-                this_job.submission_time = datetime.strptime(fw_dict['created_on'], "%Y-%m-%dT%H:%M:%S.%f")
+                this_job.submission_time = datetime.strptime(
+                    fw_dict['created_on'], "%Y-%m-%dT%H:%M:%S.%f")
             except ValueError:
                 pass
-            # TODO: add information about the dispatch time by looking into the launches
+            # NOTE: add information about the dispatch time by looking into the launches
 
             joblist.append(this_job)
 
@@ -110,7 +150,6 @@ class FwScheduler(SgeScheduler):
             return jobdict
 
         return joblist
-    
 
     def submit_from_script(self, working_directory, submit_script):
         """Submit the submission script to the scheduler
@@ -122,56 +161,57 @@ class FwScheduler(SgeScheduler):
         """
         self.transport.chdir(working_directory)
         with SandboxFolder() as sandbox:
-            self.transport.getfile(submit_script, sandbox.get_abs_path(submit_script))
+            self.transport.getfile(submit_script,
+                                   sandbox.get_abs_path(submit_script))
             options = parse_sge_script(sandbox.get_abs_path(submit_script))
 
         firework = AiiDAJobFirework(
             computer_id=self.transport._machine,
+            username=self.transport._connect_args['username'],
             remote_work_dir=working_directory,
             job_name=options['job_name'],
             submit_script_name=submit_script,
             mpinp=options['mpinp'],
             walltime=options['walltime'],
             stderr_fname=options['stderr_fname'],
-            stdout_fname=options['stcout_fname']
-        ) 
+            stdout_fname=options['stdout_fname'],
+            priority=options['priority'],
+        )
 
         mapping = self.lpad.add_wf(firework)
-        return str(list(mapping.values())[0])   # This is a string of the FW id assigned to the job 
+        return str(list(mapping.values())
+                   [0])  # This is a string of the FW id assigned to the job
 
     def kill(self, jobid):
         """Defuse a job in the LaunchPad
 
-        Note, for fireworks this only works for queued jobs. Need to think about how to 
+        Note, for fireworks this only works for queued jobs. Need to think about how to
         kill running ones....
         """
         try:
             fw_dict = self.lpad.get_fw_dict_by_id(int(jobid))
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             return False
 
         # If the job is running - request to stop the job by putting a AIIDA_STOP file
         # in the working directory
         if fw_dict['state'] == 'RUNNING':
             try:
-                launch_dir = fw_dict['spec']['_aiida_job_info']['_remote_work_dir']
+                launch_dir = fw_dict['spec']['_aiida_job_info'][
+                    '_remote_work_dir']
                 stop_file = os.path.join(launch_dir, 'AIIDA_STOP')
                 self.transport.exec_command_wait(f'touch {stop_file}')
                 return True
-            except Exception:
+            except Exception:  # pylint: disable=broad-except
                 return False
         # Otherwise just defuse the job in the launchpad
         else:
             try:
-                fw = self.lpad.defuse_fw(int(jobid))
-            except Exception:
+                firework = self.lpad.defuse_fw(int(jobid))
+            except Exception:  # pylint: disable=broad-except
                 return False
             else:
-                if fw:
-                    return True
-                else:
-                    return False
-
+                return bool(firework)
 
     def get_detailed_job_info(self, job_id):
         """
@@ -193,12 +233,15 @@ def parse_sge_script(local_script_path):
     options = {
         'stdout_fname': '_scheduler-stdout.txt',
         'stderr_fname': '_scheduler-stderr.txt',
+        'priority':
+        100,  # Base priority of AiiDA jobs in the FW system, hard coded to 100 for now
     }
+
     for line in lines:
         if '#$ -N' in line:
             options['job_name'] = line.split()[-1]  # Name of the job
         if '#$ -o' in line:
-            options['stcout_fname'] = line.replace("#$ -o", "").strip()
+            options['stdout_fname'] = line.replace("#$ -o", "").strip()
         if '#$ -e' in line:
             options['stderr_fname'] = line.replace("#$ -e", "").strip()
         if '#$ -pe' in line:
@@ -206,8 +249,17 @@ def parse_sge_script(local_script_path):
         if 'h_rt' in line:
             timestring = line.split('=')[1].strip()
             runtime = datetime.strptime(timestring, "%H:%M:%S")
-            runtime = timedelta(hours=runtime.hour, minutes=runtime.minute, seconds=runtime.second)
+            runtime = timedelta(hours=runtime.hour,
+                                minutes=runtime.minute,
+                                seconds=runtime.second)
             options['walltime'] = int(runtime.total_seconds())
+        if '#$ -p' in line:
+            options['priority'] += int(line.split()[-1])
+    required_fields = ['job_name', 'mpinp', 'walltime']
+
+    missing = [field for field in required_fields if field not in options]
+    if missing:
+        raise SchedulerParsingError(
+            f"Missing fields: {missing} while parsing the job script")
 
     return options
-    

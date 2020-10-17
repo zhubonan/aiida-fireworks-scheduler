@@ -2,22 +2,26 @@
 Test for the scheduler
 """
 
-import pytest
 from pathlib import Path
-import tempfile
 import contextlib
 import os
+import shutil
+
+import pytest
+
+from fireworks.core.rocket_launcher import launch_rocket
 
 from aiida.common.extendeddicts import AttributeDict
-from fireworks.core.rocket_launcher import launch_rocket
-from aiida_fireengine.fscheduler import FwJobResource, FwScheduler, parse_sge_script
+from aiida.schedulers.datastructures import JobInfo, JobState
+from aiida.schedulers import SchedulerParsingError
+
+from aiida_fireengine.fwscheduler import FwJobResource, FwScheduler, parse_sge_script
 from aiida_fireengine.jobs import AiiDAJobFirework
-from aiida.schedulers.datastructures import (JobInfo, JobState,
-                                             ParEnvJobResource)
-import shutil
 
 TEST_DIR = os.path.dirname(os.path.realpath(__file__))
 DATA_DIR = Path(TEST_DIR) / 'data'
+
+# pylint: disable=redefined-outer-name, unused-argument, no-self-use
 
 
 @contextlib.contextmanager
@@ -33,6 +37,7 @@ def dummy_job(clean_launchpad):
     """Create a dummy job"""
 
     job = AiiDAJobFirework('localhost',
+                           'user',
                            '/tmp/aiida-test',
                            'aiida-1',
                            '_aiidasubmit.sh',
@@ -43,6 +48,19 @@ def dummy_job(clean_launchpad):
 
     job_id = clean_launchpad.add_wf(job)
     return job_id
+
+
+def test_fw_resources():
+    """Test construction of the FwResource object"""
+    res = FwJobResource(tot_num_mpiprocs=8)
+    assert res.parallel_env == 'mpi'
+
+    res = FwJobResource(tot_num_mpiprocs=8, parallel_env='mpi')
+    assert res.parallel_env == 'mpi'
+    assert res.tot_num_mpiprocs == 8
+
+    with pytest.raises(ValueError):
+        res = FwJobResource(tot_num_mpiprocs=8, foo='bar', parallel_env='mpi')
 
 
 def test_job_init(dummy_job, launchpad):
@@ -122,6 +140,11 @@ def test_parse_script():
     assert options['mpinp'] == 24
     assert options['walltime'] == 8 * 3600
 
+    # Test raising error for incomplete script
+    with pytest.raises(SchedulerParsingError):
+        options = parse_sge_script(
+            (Path(TEST_DIR) / 'data') / '_aiidasubmit_incomplete.sh')
+
 
 def test_job_kill_while_run(dummy_job, launchpad):
     """
@@ -137,7 +160,8 @@ def test_job_kill_while_run(dummy_job, launchpad):
     assert str(ldir) == '/tmp/aiida-test'
 
     ldir.mkdir(parents=True, exist_ok=True)
-    (ldir / '_aiidasubmit.sh').write_text("echo Foo > bar; touch AIIDA_STOP; sleep 10 && touch foo")
+    (ldir / '_aiidasubmit.sh'
+     ).write_text("echo Foo > bar; touch AIIDA_STOP; sleep 10 && touch foo")
     with keep_cwd():
         launch_rocket(launchpad, fw_id=job_id)
 
@@ -148,7 +172,6 @@ def test_job_kill_while_run(dummy_job, launchpad):
 
     fw_dict = lpad.get_fw_dict_by_id(job_id)
     assert fw_dict['state'] == 'FIZZLED'
-
 
     # Clean up the tempdiretory
     shutil.rmtree(str(ldir))
@@ -170,25 +193,23 @@ def test_kill(launchpad, dummy_job):
 
 def test_submit_job(clean_launchpad, clear_database_auto):
     """Test submitting a job"""
-    tmpd = tempfile.mkdtemp()
-    class FakeTrans:
-
+    class MockTrans:
+        """Mocking Transport"""
         def __init__(self):
             self._machine = 'localhost'
+            self._connect_args = {'username': 'user'}
 
-        def chdir(self, dir):
+        def chdir(self, directory):
             """Mock chdir method"""
-            pass
-
         def getfile(self, fname, localpath):
             """Fake getfile method"""
             shutil.copy(DATA_DIR / fname, localpath)
-            
+
     scheduler = FwScheduler(clean_launchpad)
-    scheduler.set_transport(FakeTrans())
+    scheduler.set_transport(MockTrans())
     job_id = scheduler.submit_from_script('foo', '_aiidasubmit.sh')
 
     assert job_id == '1'
-    
+
     fw_ids = clean_launchpad.get_fw_ids({})
     assert fw_ids[0] == 1
