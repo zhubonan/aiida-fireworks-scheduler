@@ -1,29 +1,33 @@
 """pytest fixtures for simplified testing."""
 
-import pytest
 from pathlib import Path
+
+import pytest
+
 from fireworks.core.launchpad import LaunchPad
 from fireworks import fw_config
+
+# pylint: disable=invalid-name, redefined-outer-name
 
 pytest_plugins = ['aiida.manage.tests.pytest_fixtures']
 
 
 @pytest.fixture(scope='function', autouse=True)
 def clear_database_auto(clear_database):  # pylint: disable=unused-argument
-     """Automatically clear database in between tests."""
-
+    """Automatically clear database in between tests."""
 @pytest.fixture(scope='function')
 def fireengine_code(aiida_local_code_factory):
     """Get a fireengine code.
     """
     fireengine_code = aiida_local_code_factory(executable='diff',
-                                            entry_point='fireengine')
+                                               entry_point='fireengine')
     return fireengine_code
 
 
 MODULE_DIR = Path(__file__).parent
 DATA_DIR = MODULE_DIR / 'test_data'
 TESTDB_NAME = "aiida-fireengine-test"
+
 
 @pytest.fixture(scope='session')
 def launchpad():

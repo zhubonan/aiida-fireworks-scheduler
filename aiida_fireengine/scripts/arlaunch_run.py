@@ -15,6 +15,8 @@ from fireworks.features.multi_launcher import launch_multiprocess
 
 from aiida_fireengine.fworker import AiiDAFWorker
 
+#pylint: disable=import-outside-toplevel
+
 
 def handle_interrupt(signum, frame):
     """Handler for interruption"""
@@ -140,7 +142,7 @@ def arlaunch():
                         action='store_true')
 
     try:
-        import argcomplete  # pylint: disable=import-outside-toplevel
+        import argcomplete
         argcomplete.autocomplete(parser)
         # This supports bash autocompletion. To enable this, pip install
         # argcomplete, activate global completion, or add

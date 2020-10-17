@@ -127,7 +127,7 @@ def test_get_jobs(dummy_job, launchpad):
     with keep_cwd():
         launch_rocket(launchpad, fw_id=fw_id)
     jobs = scheduler.get_jobs(jobs=[str(fw_id)])
-    assert len(jobs) == 0
+    assert not jobs
 
 
 def test_parse_script():
@@ -185,7 +185,7 @@ def test_kill(launchpad, dummy_job):
     assert scheulder.kill(job_id)
 
     ids = launchpad.get_fw_ids(query={'state': 'READY'})
-    assert len(ids) == 0
+    assert not ids
 
     ids = launchpad.get_fw_ids(query={'state': 'DEFUSED'})
     assert len(ids) == 1

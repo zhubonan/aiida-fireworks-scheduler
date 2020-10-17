@@ -7,7 +7,8 @@ import re
 import tempfile
 import logging
 from datetime import datetime, timedelta, timezone
-logger = logging.getLogger(__name__)
+
+LOGGER = logging.getLogger(__name__)
 
 
 class SchedulerAwareness:
@@ -37,19 +38,21 @@ class SchedulerAwareness:
         """Return wether I am in a remote job"""
         if self.job_id is None:
             return False
-        else:
-            return True
+        return True
 
     @property
     def job_id(self):
+        """ID of the current job"""
         raise NotImplementedError
 
     @classmethod
-    def get_awareness(self):
+    def get_awareness(cls):
+        """Automatically get the specialised Awareness instance"""
         for trial in [SlurmAwareness, SGEAwareness, DummyAwareness]:
             obj = trial()
             if obj.is_in_job:
                 return obj
+        return None
 
 
 class DummyAwareness(SchedulerAwareness):
@@ -94,7 +97,7 @@ class SGEAwareness(SchedulerAwareness):
             task_id = os.environ.get('SGE_TASK_ID')
             if task_id and task_id != 'undefined':
                 job_id = job_id + '.' + task_id
-                logger.warning(
+                LOGGER.warning(
                     'WARNING: REMAINING TIME IS NOT CORRECT FOR TASK ARRAY')
             self._job_id = job_id
         return self._job_id
@@ -120,8 +123,7 @@ class SGEAwareness(SchedulerAwareness):
         nslots = os.environ.get('NSLOTS')
         if nslots:
             return int(nslots)
-        else:
-            return None
+        return None
 
     def get_max_run_seconds(self):
         """Return the maximum run time in seconds"""
@@ -129,8 +131,7 @@ class SGEAwareness(SchedulerAwareness):
         match = re.search(r'h_rt=(\d+)', rlist)
         if match:
             return int(match.group(1))
-        else:
-            return None
+        return None
 
     def get_end_time(self, refresh=False):
         """Return the time when the job is expected to finish"""
@@ -183,8 +184,7 @@ class SlurmAwareness(SchedulerAwareness):
         job_id = os.environ.get('SLURM_JOB_ID', None)
         if job_id is None:
             return False
-        else:
-            return True
+        return True
 
     @property
     def job_id(self):
@@ -205,7 +205,7 @@ class SlurmAwareness(SchedulerAwareness):
             job_id = os.environ['SLURM_JOB_ID']
         except KeyError:
             if self._warning == 0:
-                logger.debug('NOT STARTED FROM SLURM')
+                LOGGER.debug('NOT STARTED FROM SLURM')
                 self._warning += 1
             self.task_info = {}
             return
