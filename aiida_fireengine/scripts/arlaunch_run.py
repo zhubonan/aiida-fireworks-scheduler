@@ -15,7 +15,7 @@ from fireworks.features.multi_launcher import launch_multiprocess
 
 from aiida_fireengine.fworker import AiiDAFWorker
 
-#pylint: disable=import-outside-toplevel
+#pylint: disable=too-many-statements,line-too-long,import-outside-toplevel
 
 
 def handle_interrupt(signum, frame):
@@ -25,7 +25,6 @@ def handle_interrupt(signum, frame):
     sys.exit(1)
 
 
-#pylint: disable=too-many-statements,line-too-long
 def arlaunch():
     """
     Function rapid-fire job launching

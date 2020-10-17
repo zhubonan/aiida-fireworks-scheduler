@@ -19,7 +19,7 @@ from aiida.schedulers.datastructures import (JobInfo, JobState,
 
 from aiida_fireengine.jobs import AiiDAJobFirework
 
-# pylint: disable=protected-access,
+# pylint: disable=protected-access,too-many-locals
 
 _MAP_STATUS_FW = {
     'PAUSED': JobState.QUEUED_HELD,
