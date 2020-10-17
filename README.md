@@ -5,11 +5,7 @@
 
 # aiida-fireengine
 
-AiiDA plugin to allow using `fireworks` as the executation engine for `CalcJob`.
-
-This plugin is the default output of the
-[AiiDA plugin cutter](https://github.com/aiidateam/aiida-plugin-cutter),
-intended to help developers get started with their AiiDA plugins.
+AiiDA plugin to allow using `fireworks` as the execution engine for `CalcJob`.
 
 ## Repository contents
 
@@ -17,11 +13,10 @@ intended to help developers get started with their AiiDA plugins.
   * [`ci.yml`](.github/workflows/ci.yml): runs tests, checks test coverage and builds documentation at every new commit
   * [`publish-on-pypi.yml`](.github/workflows/publish-on-pypi.yml): automatically deploy git tags to PyPI - just generate a [PyPI API token](https://pypi.org/help/#apitoken) for your PyPI account and add it to the `pypi_token` secret of your github repository
 * [`aiida_fireengine/`](aiida_fireengine/): The main source code of the plugin package
-  * [`data/`](aiida_fireengine/data/): A new `DiffParameters` data class, used as input to the `DiffCalculation` `CalcJob` class
-  * [`calculations.py`](aiida_fireengine/calculations.py): A new `DiffCalculation` `CalcJob` class
-  * [`cli.py`](aiida_fireengine/cli.py): Extensions of the `verdi data` command line interface for the `DiffParameters` class
-  * [`helpers.py`](aiida_fireengine/helpers.py): Helpers for setting up an AiiDA code for `diff` automatically
-  * [`parsers.py`](aiida_fireengine/parsers.py): A new `Parser` for the `DiffCalculation`
+  * [`fwscheduler.py`](aiida_fireengine/fwscheduler.py): A new `FWScheduler` class.
+  * [`scripts/arlauncher.py`](aiida_fireengine/scripts/arlaunch_run.py): A special `rlaunch` script for launching jobs respecting the walltime limits.
+  * [`jobs.py`](aiida_fireengine/jobs.py): Specialised `AiiDAJobFirework` for running AiiDA prepared jobs.
+  * [`fworker.py`](aiida_fireengine/fworker.py): Specialised `AiiDAFWorker` to generate query for selecting appropriate jobs from the FireServer.
 * [`docs/`](docs/): A documentation template ready for publication on [Read the Docs](http://aiida-diff.readthedocs.io/en/latest/)
 * [`examples/`](examples/): An example of how to submit a calculation using this plugin
 * [`tests/`](tests/): Basic regression tests using the [pytest](https://docs.pytest.org/en/latest/) framework (submitting a calculation, ...). Install `pip install -e .[testing]` and run `pytest`.
@@ -37,72 +32,34 @@ intended to help developers get started with their AiiDA plugins.
 * [`setup.json`](setup.json): Plugin metadata for registration on [PyPI](https://pypi.org/) and the [AiiDA plugin registry](https://aiidateam.github.io/aiida-registry/) (including entry points)
 * [`setup.py`](setup.py): Installation script for pip / [PyPI](https://pypi.org/)
 
-
-See also the following video sequences from the 2019-05 AiiDA tutorial:
-
- * [aiida-diff setup.json](https://www.youtube.com/watch?v=2CxiuiA1uVs&t=240s)
- * [run aiida-diff example calculation](https://www.youtube.com/watch?v=2CxiuiA1uVs&t=403s)
- * [aiida-diff CalcJob plugin](https://www.youtube.com/watch?v=2CxiuiA1uVs&t=685s)
- * [aiida-diff Parser plugin](https://www.youtube.com/watch?v=2CxiuiA1uVs&t=936s)
- * [aiida-diff computer/code helpers](https://www.youtube.com/watch?v=2CxiuiA1uVs&t=1238s)
- * [aiida-diff input data (with validation)](https://www.youtube.com/watch?v=2CxiuiA1uVs&t=1353s)
- * [aiida-diff cli](https://www.youtube.com/watch?v=2CxiuiA1uVs&t=1621s)
- * [aiida-diff tests](https://www.youtube.com/watch?v=2CxiuiA1uVs&t=1931s)
- * [Adding your plugin to the registry](https://www.youtube.com/watch?v=760O2lDB-TM&t=112s)
- * [pre-commit hooks](https://www.youtube.com/watch?v=760O2lDB-TM&t=333s)
-
-For more information, see the [developer guide](https://aiida-diff.readthedocs.io/en/latest/developer_guide) of your plugin.
-
-
 ## Features
 
- * Add input files using `SinglefileData`:
-   ```python
-   SinglefileData = DataFactory('singlefile')
-   inputs['file1'] = SinglefileData(file='/path/to/file1')
-   inputs['file2'] = SinglefileData(file='/path/to/file2')
-   ```
+* `FWScheduler` Scheduler plugin to submit jobs to LaunchPad managed by `fireworks` package.
 
- * Specify command line options via a python dictionary and `DiffParameters`:
-   ```python
-   d = { 'ignore-case': True }
-   DiffParameters = DataFactory('fireengine')
-   inputs['parameters'] = DiffParameters(dict=d)
-   ```
-
- * `DiffParameters` dictionaries are validated using [voluptuous](https://github.com/alecthomas/voluptuous).
-   Find out about supported options:
-   ```python
-   DiffParameters = DataFactory('fireengine')
-   print(DiffParameters.schema.schema)
-   ```
+* `arlaunch` command for launching jobs on the cluster machine.
 
 ## Installation
 
+On the local machine where AiiDA is installed:
+
 ```shell
-pip install aiida-fireengine
-verdi quicksetup  # better to set up a new profile
-verdi plugin list aiida.calculations  # should now show your calclulation plugins
+pip install aiida-fireengine[local]
 ```
 
+On the remote machine where jobs to be launched:
+
+```shell
+pip install aiida-fireengine
+```
 
 ## Usage
 
-Here goes a complete example of how to submit a test calculation using this plugin.
+Simply create a new computer using `verdi computer setup` and select the `fw` scheduler.
+Configure your `fireworks` configuration following the guide [here](https://materialsproject.github.io/fireworks/config_tutorial.html).
 
-A quick demo of how to submit a calculation:
-```shell
-verdi daemon start     # make sure the daemon is running
-cd examples
-./example_01.py        # run test calculation
-verdi process list -a  # check record of calculation
-```
+Note that you must configure the `LAUNCHPAD_LOC` setting pointing to your `my_launchpad.yaml` file on the LOCAL machine. These setting will be picked up by the daemon.
 
-The plugin also includes verdi commands to inspect its data types:
-```shell
-verdi data fireengine list
-verdi data fireengine export <PK>
-```
+On the remote machine, setup your `my_fworker.yaml` with special directives for identifying the computer and username. Launch jobs use the `arlaunch` command supplied. Note that you will need to install this package on the remote machine.
 
 ## Development
 
@@ -120,8 +77,6 @@ See the [developer guide](http://aiida-fireengine.readthedocs.io/en/latest/devel
 
 MIT
 
-
 ## Contact
 
 zhubonan@outlook.com
-

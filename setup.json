@@ -15,22 +15,24 @@
     "version": "0.1.0a0",
     "entry_points": {
         "aiida.scheduler": [
-            "fw = aiida_fireengine.fscheuler:FwScheduler"
+            "fw = aiida_fireengine.fwscheuler:FwScheduler"
         ],
         "console_scripts": [
-            "arlaunch = aiida_fireengine.scripts.arluanch_run:arlaunch"
+            "arlaunch = aiida_fireengine.scripts.arlaunch_run:arlaunch"
         ]
     },
     "include_package_data": true,
     "setup_requires": ["reentry"],
     "reentry_register": true,
     "install_requires": [
-        "aiida-core>=1.3.0,<2.0.0",
         "six",
         "voluptuous",
         "fireworks==1.9.5"
     ],
     "extras_require": {
+        "local": [
+            "aiida-core>=1.3.0,<2.0.0"
+        ],
         "testing": [
             "pgtest~=1.3.1",
             "wheel~=0.31",
