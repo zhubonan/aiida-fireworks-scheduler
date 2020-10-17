@@ -118,7 +118,7 @@ class FwScheduler(SgeScheduler):
             spec = fw_dict.get("spec", {})
 
             this_job = JobInfo()
-            this_job.job_id = fid
+            this_job.job_id = str(fid)
             try:
                 this_job.job_state = _MAP_STATUS_FW[fw_dict['state']]
             except IndexError:

@@ -19,7 +19,7 @@ class AiiDAFWorker(FWorker):
     """
     SECONDS_SAFE_INTERVAL = 60
 
-    def __init__(self, computer_id, username, mpinp, *args, **kwargs):
+    def __init__(self, computer_id, username, *args, mpinp=None, **kwargs):
         """
         Instantiate a AiiDAFWorker object.
         The worker selects the jobs to run using the criteria defined in the
@@ -27,7 +27,7 @@ class AiiDAFWorker(FWorker):
 
         :param computer_id (str): Hostname of the computer
         :param username (str): User name for the computer
-        :param mpinp (int): the number of MPI processes to be launched.
+        :param mpinp (int): the number of MPI processes to be launched, ignored if set to None.
 
         The rest of the arguments will be passed to the `FWorker`.
         """
@@ -73,13 +73,14 @@ class AiiDAFWorker(FWorker):
 
         # AiiDA related queries
         query_aiida = {
-            'spec._aiida_job_info.mpinp': self.mpinp,
             'spec._aiida_job_info.computer_id': self.computer_id,
             'spec._aiida_job_info.username': self.username,
             'spec._aiida_job_info.walltime': {
                 '$lt': self.seconds_left - self.SECONDS_SAFE_INTERVAL
             }
         }
+        if self.mpinp is not None:
+            query_aiida['spec._aiida_job_info.mpinp'] = self.mpinp
 
         # Need to satisfy either of the two sub queries
         return {'$or': [query_aiida, query_]}
