@@ -253,7 +253,7 @@ def parse_sge_script(local_script_path):
                                 minutes=runtime.minute,
                                 seconds=runtime.second)
             options['walltime'] = int(runtime.total_seconds())
-        if '#$ -p' in line:
+        if '#$ -p ' in line:
             options['priority'] += int(line.split()[-1])
     required_fields = ['job_name', 'mpinp', 'walltime']
 

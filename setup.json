@@ -15,7 +15,7 @@
     "version": "0.1.0a0",
     "entry_points": {
         "aiida.schedulers": [
-            "fireworks = aiida_fireengine.fwscheuler:FwScheduler"
+            "fireworks = aiida_fireengine.fwscheduler:FwScheduler"
         ],
         "console_scripts": [
             "arlaunch = aiida_fireengine.scripts.arlaunch_run:arlaunch"
