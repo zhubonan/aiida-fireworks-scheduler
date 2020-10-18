@@ -7,10 +7,13 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+
     strategy:
       matrix:
-        python-version: [3.7]
+        python-version: [3.7, 3.8]
         backend: ['django']
+        mongodb-version: [3.6, 4.2]
+
     steps:
     - uses: actions/checkout@v2
 
@@ -34,6 +37,11 @@ jobs:
         pip install --upgrade pip
         pip install -e .[testing]
         reentry scan -r aiida
+
+    - name: Start MongoDB
+      uses: supercharge/mongodb-github-action@1.2.0
+      with:
+        mongodb-version: ${{ matrix.mongodb-version }}
 
     - name: Run test suite
       env:
