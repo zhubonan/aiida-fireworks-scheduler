@@ -25,12 +25,12 @@ class AiiDAFWorker(FWorker):
         The worker selects the jobs to run using the criteria defined in the
         constructor
 
-        :param computer_id (str): Hostname of the computer
-        :param username (str): User name for the computer
-        :param mpinp (int): the number of MPI processes to be launched.
+        :param computer_id: Hostname of the computer
+        :param username: User name for the computer
+        :param mpinp: the number of MPI processes to be launched.
           this constraint will be ignored if is is set to -1 or 0.
 
-        The rest of the arguments will be passed to the `FWorker`.
+        The rest of the arguments will be passed to the FWorker.
         """
         self.computer_id = computer_id
         self.username = username

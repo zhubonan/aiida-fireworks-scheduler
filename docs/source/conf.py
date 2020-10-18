@@ -352,4 +352,7 @@ def setup(app):
 
 # Warnings to ignore when using the -n (nitpicky) option
 # We should ignore any python built-in exception, for instance
-nitpick_ignore = []
+nitpick_ignore = [
+    ('py:class', 'fireworks.core.fworker.FWorker'),
+    ('py:class', 'fireworks.core.firework.Firework'),
+]
