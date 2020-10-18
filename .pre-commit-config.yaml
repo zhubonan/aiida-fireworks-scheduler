@@ -15,7 +15,7 @@
   - id: prospector
     language: system
     types: [python]
-    exclude: "docs|.github"
+    exclude: "(^docs)|(^.github)"
 
 - repo: local
   hooks:
