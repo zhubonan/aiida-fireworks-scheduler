@@ -29,6 +29,8 @@ _MAP_STATUS_FW = {
     'RUNNING': JobState.RUNNING
 }
 
+DEFAULT_USERNAME = "AIIDA_USER"
+
 
 class FwJobResource(ParEnvJobResource):
     """
@@ -165,9 +167,15 @@ class FwScheduler(SgeScheduler):
                                    sandbox.get_abs_path(submit_script))
             options = parse_sge_script(sandbox.get_abs_path(submit_script))
 
+        # The username only makes sense for SSH transport
+        try:
+            username = self.transport._connect_args['username']
+        except AttributeError:
+            username = DEFAULT_USERNAME
+
         firework = AiiDAJobFirework(
             computer_id=self.transport._machine,
-            username=self.transport._connect_args['username'],
+            username=username,
             remote_work_dir=working_directory,
             job_name=options['job_name'],
             submit_script_name=submit_script,

@@ -12,6 +12,8 @@ from fireworks.utilities.fw_serializers import recursive_serialize, \
 
 from aiida_fireengine.awareness import SchedulerAwareness
 
+from .fwscheduler import DEFAULT_USERNAME
+
 
 class AiiDAFWorker(FWorker):
     """
@@ -19,7 +21,12 @@ class AiiDAFWorker(FWorker):
     """
     SECONDS_SAFE_INTERVAL = 60
 
-    def __init__(self, computer_id, username, mpinp, *args, **kwargs):
+    def __init__(self,
+                 computer_id,
+                 mpinp,
+                 *args,
+                 username=DEFAULT_USERNAME,
+                 **kwargs):
         """
         Instantiate a AiiDAFWorker object.
         The worker selects the jobs to run using the criteria defined in the
@@ -109,7 +116,7 @@ class AiiDAFWorker(FWorker):
     @recursive_deserialize
     def from_dict(cls, m_dict):
         return AiiDAFWorker(computer_id=m_dict['computer_id'],
-                            username=m_dict['username'],
+                            username=m_dict.get('username', DEFAULT_USERNAME),
                             mpinp=m_dict['mpinp'],
                             name=m_dict['name'],
                             category=m_dict['category'],

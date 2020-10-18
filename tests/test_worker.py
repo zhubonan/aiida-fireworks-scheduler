@@ -3,7 +3,7 @@ Test the AiiDAFWworker
 """
 
 import pytest
-from aiida_fireengine.fworker import AiiDAFWorker
+from aiida_fireengine.fworker import AiiDAFWorker, DEFAULT_USERNAME
 # pylint: disable=redefined-outer-name
 
 
@@ -40,3 +40,7 @@ def test_worker_serialise(worker):
     worker_dict['computer_id'] = 'remote'
     worker2 = AiiDAFWorker.from_dict(worker_dict)
     assert worker2.computer_id == 'remote'
+
+    worker_dict.pop("username")
+    worker2 = AiiDAFWorker.from_dict(worker_dict)
+    assert worker2.username == DEFAULT_USERNAME
