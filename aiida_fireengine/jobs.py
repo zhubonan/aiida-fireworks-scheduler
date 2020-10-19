@@ -23,6 +23,8 @@ done
 echo ALL DONE
 """)
 
+RESERVED_CATEGORY = "AIIDA_RESERVED_CATEGORY"
+
 
 class AiiDAJobFirework(Firework):
     """
@@ -54,7 +56,7 @@ class AiiDAJobFirework(Firework):
                 'walltime': walltime,  # in seconds
             },
             # Category set it to a special values to indicate it is an AiiDA job
-            '_category': 'AIIDA_RESERVED_CATEGORY',
+            '_category': RESERVED_CATEGORY,
             '_launch_dir': remote_work_dir,
             '_priority': priority,
         }

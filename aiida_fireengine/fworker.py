@@ -13,6 +13,7 @@ from fireworks.utilities.fw_serializers import recursive_serialize, \
 from aiida_fireengine.awareness import SchedulerAwareness
 
 from .fwscheduler import DEFAULT_USERNAME
+from .jobs import RESERVED_CATEGORY
 
 
 class AiiDAFWorker(FWorker):
@@ -77,7 +78,7 @@ class AiiDAFWorker(FWorker):
             query_['spec._category'] = {"$in": self.category}
         # Do not match any AIIDA_RESERVED_CATEGORY jobs - those jobs should be matched by
         # specific conditions as defined below
-        query_['spec._category']['$ne'] = "AIIDA_RESERVED_CATEGORY"
+        query_['spec._category']['$ne'] = RESERVED_CATEGORY
 
         # AiiDA related queries
         query_aiida = {
