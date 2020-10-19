@@ -1,0 +1,9 @@
+# Example worker definition for operation
+
+name: "a worker that picks AiiDA jobs"  #  A name for FWorker
+mpinp: 4                                #  Select jobs that will be ran with 4 MPI processes
+computer_id:  localhost                 #  Select jobs that are run on "localhost". This is the host name for the Computer
+username: "AIIDA_USER"                  #  Username for the remote computer, if using ssh transport. Leave blank for direct transport, in which case the default "AIIDA_USER" is applied automatically
+category: "large-job"                   #  OPTIONAL: Category for selecting non-AiiDA jobs, as in the original FWorker
+env: {}                                 #  OPTIONAL: Environmental variables as controlled by Fireworks, no used for AiiDA
+query: ""                               #  OPTIONAL: JSON serialized raw query mapping, not used for AiiDA job but maybe applied for other fireworks jobs
