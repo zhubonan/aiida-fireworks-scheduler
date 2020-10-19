@@ -117,16 +117,16 @@ def test_duplicate(cmd_test_env):
     _ = cmd_test_env
     runner = CliRunner()
 
-    runner.invoke(duplicate_fe, ["-Y", "localhost"], catch_exceptions=True)
+    runner.invoke(duplicate_fe, ["-Y", "localhost"], catch_exceptions=False)
     assert Computer.get(label='localhost-fw')
 
     runner.invoke(duplicate_fe, ["-Y", "localhost", "--suffix", 'fe'],
-                  catch_exceptions=True)
+                  catch_exceptions=False)
     assert Computer.get(label='localhost-fe')
 
     runner.invoke(duplicate_fe,
                   ["-Y", "localhost", "--suffix", 'fc', '--include-codes'],
-                  catch_exceptions=True)
+                  catch_exceptions=False)
     assert Computer.get(label='localhost-fc')
     assert Code.get_from_string("bash@localhost-fc")
 
@@ -141,13 +141,14 @@ def test_worker(cmd_test_env):
 
         runner.invoke(generate_worker,
                       ['-Y', 'localhost', '--mpinp', '4', 'myworker.yaml'],
-                      catch_exceptions=True)
+                      catch_exceptions=False)
         assert not (Path(workdir) / 'myworker.yaml').exists()
 
-        runner.invoke(duplicate_fe, ["-Y", "localhost"], catch_exceptions=True)
+        runner.invoke(duplicate_fe, ["-Y", "localhost"],
+                      catch_exceptions=False)
         runner.invoke(generate_worker,
                       ['-Y', 'localhost-fw', '--mpinp', '4', 'myworker.yaml'],
-                      catch_exceptions=True)
+                      catch_exceptions=False)
         worker = AiiDAFWorker.from_file(str(Path(workdir) / "myworker.yaml"))
 
         assert worker.computer_id == "localhost"
