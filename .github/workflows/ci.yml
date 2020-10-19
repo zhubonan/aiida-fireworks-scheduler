@@ -43,6 +43,9 @@ jobs:
       with:
         mongodb-version: ${{ matrix.mongodb-version }}
 
+    - name: Copy my_launchpad file
+      run: cp .github/my_launchpad.yaml ./
+
     - name: Run test suite
       env:
         AIIDA_TEST_BACKEND: ${{ matrix.backend }}
