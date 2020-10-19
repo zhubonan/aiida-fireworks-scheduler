@@ -18,6 +18,7 @@ from aiida.schedulers.datastructures import (JobInfo, JobState,
                                              ParEnvJobResource)
 
 from aiida_fireengine.jobs import AiiDAJobFirework
+from aiida_fireengine.common import DEFAULT_USERNAME
 
 # pylint: disable=protected-access,too-many-locals
 
@@ -28,8 +29,6 @@ _MAP_STATUS_FW = {
     'RESERVED': JobState.QUEUED,
     'RUNNING': JobState.RUNNING
 }
-
-DEFAULT_USERNAME = "AIIDA_USER"
 
 
 class FwJobResource(ParEnvJobResource):

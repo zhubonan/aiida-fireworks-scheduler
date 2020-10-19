@@ -12,8 +12,7 @@ from fireworks.utilities.fw_serializers import recursive_serialize, \
 
 from aiida_fireengine.awareness import SchedulerAwareness
 
-from .fwscheduler import DEFAULT_USERNAME
-from .jobs import RESERVED_CATEGORY
+from aiida_fireengine.common import DEFAULT_USERNAME, RESERVED_CATEGORY
 
 
 class AiiDAFWorker(FWorker):

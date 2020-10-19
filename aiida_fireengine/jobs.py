@@ -5,6 +5,7 @@ Mapping AiiDA scheduler jobs to `Firework`
 from string import Template
 from fireworks.user_objects.firetasks.script_task import ScriptTask
 from fireworks.core.firework import Firework
+from aiida_fireengine.common import RESERVED_CATEGORY
 
 RUN_SCRIPT_TEMPLATE = Template("""
 chmod +x ${submit_script_name}
@@ -22,8 +23,6 @@ while [[ -e /proc/$$! ]]; do
 done
 echo ALL DONE
 """)
-
-RESERVED_CATEGORY = "AIIDA_RESERVED_CATEGORY"
 
 
 class AiiDAJobFirework(Firework):

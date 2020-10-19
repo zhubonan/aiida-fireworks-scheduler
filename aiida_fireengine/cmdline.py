@@ -10,8 +10,8 @@ from aiida.cmdline.utils.decorators import with_dbenv
 from aiida.cmdline.params import options
 from aiida.cmdline.commands.cmd_data import verdi_data
 
-from .fwscheduler import DEFAULT_USERNAME
-from .fworker import AiiDAFWorker
+from aiida_fireengine.common import DEFAULT_USERNAME
+from aiida_fireengine.fworker import AiiDAFWorker
 
 # pylint: disable=import-outside-toplevel,no-member
 
