@@ -5,7 +5,14 @@
 
 # aiida-fireengine
 
-AiiDA plugin to allow using `fireworks` as the execution engine for `CalcJob`.
+AiiDA plugin for using `fireworks` as the execution engine for `CalcJobProcess`.
+
+The main advantage of using the `FwScheduler`, as provided in this plugin, compared to the standard AiiDA scheduler plugins is that it allows more flexible job placement.
+For example, your may be forced to submit very large jobs to the cluster (or simply such jobs goes through the queue faster!),
+or that the cluster has a strict limit on the number of jobs that can be in the queue.
+Using `FwScheduler`, a single allocation of the resources from the scheduler (SGE, PBSpro, SLURM etc.) can be used to run multiple AiiDA `CalcJob`s in serial or in parallel, depending on the user configuration.
+In addition, AiiDA jobs can be run along side other workflows in fireworks.
+
 
 ## Repository contents
 
@@ -34,9 +41,11 @@ AiiDA plugin to allow using `fireworks` as the execution engine for `CalcJob`.
 
 ## Features
 
-* `FWScheduler` Scheduler plugin to submit jobs to LaunchPad managed by `fireworks` package.
+* `FWScheduler` scheduler plugin to submit jobs to LaunchPad managed by `fireworks`.
 
 * `arlaunch` command for launching jobs on the cluster machine.
+
+* `verdi data fireengine` command line tool for duplicating existing `Computer`/`Cold` for switching to `FwScheduler`.
 
 ## Installation
 
@@ -57,9 +66,17 @@ pip install aiida-fireengine
 Simply create a new computer using `verdi computer setup` and select the `fw` scheduler.
 Configure your `fireworks` configuration following the guide [here](https://materialsproject.github.io/fireworks/config_tutorial.html).
 
-Note that you must configure the `LAUNCHPAD_LOC` setting pointing to your `my_launchpad.yaml` file on the LOCAL machine. These setting will be picked up by the daemon.
+Note that you must configure the `LAUNCHPAD_LOC` setting in the file as defined by the `FW_CONFIG_FILE` environment variable to point to your `my_launchpad.yaml` file on BOTH the local and remote machines. On the local machine, it will be picked up by the daemon.
 
-On the remote machine, setup your `my_fworker.yaml` with special directives for identifying the computer and username. Launch jobs use the `arlaunch` command supplied. Note that you will need to install this package on the remote machine.
+In addition, on the remote machine, setup your `my_fworker.yaml` with special directives for identifying the computer and username. These files can be generated using:
+
+```shell
+verdi data fireengine generate-worker -Y COMPUTER -mpinp NUM_MPI_PROCESSORS
+```
+
+Note that each *worker" can only launch jobs of a particular size (number of MPI processors). But you can always combine multiple workers in one or more cluster jobs.
+
+At runtime, jobs needs to be launched with the `arlaunch` command on the remote machine.
 
 ## Development
 
