@@ -75,6 +75,9 @@ class AiiDAFWorker(FWorker):
                 query_['spec._category'] = {"$eq": self.category}
         elif self.category:  # category is list of str
             query_['spec._category'] = {"$in": self.category}
+        else:
+            # Need it to be a dictionary
+            query_['spec._category'] = {}
         # Do not match any AIIDA_RESERVED_CATEGORY jobs - those jobs should be matched by
         # specific conditions as defined below
         query_['spec._category']['$ne'] = RESERVED_CATEGORY
