@@ -2,7 +2,7 @@
 Specialised scheduler to interface with Fireworks
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime
 import os
 
 from fireworks.core.launchpad import LaunchPad
@@ -255,11 +255,10 @@ def parse_sge_script(local_script_path):
             options['mpinp'] = int(line.split()[-1])
         if 'h_rt' in line:
             timestring = line.split('=')[1].strip()
-            runtime = datetime.strptime(timestring, "%H:%M:%S")
-            runtime = timedelta(hours=runtime.hour,
-                                minutes=runtime.minute,
-                                seconds=runtime.second)
-            options['walltime'] = int(runtime.total_seconds())
+            hours, minutes, seconds = timestring.split(':')
+            seconds = int(seconds) + int(minutes) * 60 + int(hours) * 3600
+            options['walltime'] = int(seconds)
+
         if '#$ -p ' in line:
             options['priority'] += int(line.split()[-1])
     required_fields = ['job_name', 'mpinp', 'walltime']
