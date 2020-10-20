@@ -50,6 +50,24 @@ def dummy_job(clean_launchpad):
     return job_id
 
 
+@pytest.fixture
+def short_job(clean_launchpad):
+    """Create a dummy job"""
+
+    job = AiiDAJobFirework('localhost',
+                           'user',
+                           '/tmp/aiida-test',
+                           'aiida-1',
+                           '_aiidasubmit.sh',
+                           walltime=2,
+                           mpinp=2,
+                           stdout_fname='_scheduler-stdout.txt',
+                           stderr_fname='_scheduler-stderr.txt')
+
+    job_id = clean_launchpad.add_wf(job)
+    return job_id
+
+
 def test_fw_resources():
     """Test construction of the FwResource object"""
     res = FwJobResource(tot_num_mpiprocs=8)
@@ -171,7 +189,38 @@ def test_job_kill_while_run(dummy_job, launchpad):
     assert not (ldir / 'foo').exists()
 
     fw_dict = lpad.get_fw_dict_by_id(job_id)
-    assert fw_dict['state'] == 'FIZZLED'
+    assert fw_dict['state'] == 'COMPLETED'
+    assert fw_dict['launches'][0]['action']['stored_data']['returncode'] == 11
+
+    # Clean up the tempdiretory
+    shutil.rmtree(str(ldir))
+
+
+def test_job_timeout(short_job, launchpad):
+    """Test the case where a job gets terminated timing out"""
+
+    lpad = launchpad
+    job_id = list(short_job.values())[0]
+    fw_dict = lpad.get_fw_dict_by_id(job_id)
+
+    ldir = Path(fw_dict['spec']['_launch_dir'])
+    assert str(ldir) == '/tmp/aiida-test'
+
+    ldir.mkdir(parents=True, exist_ok=True)
+    # Should have bar but not foo, FW job should be COMPLETED
+    (ldir /
+     '_aiidasubmit.sh').write_text("echo Foo > bar; sleep 3 && touch foo")
+    with keep_cwd():
+        launch_rocket(launchpad, fw_id=job_id)
+
+    assert (ldir / 'bar').exists()
+    assert (ldir / '_scheduler-stdout.txt').exists()
+    assert (ldir / '_scheduler-stderr.txt').exists()
+    assert not (ldir / 'foo').exists()
+
+    fw_dict = lpad.get_fw_dict_by_id(job_id)
+    assert fw_dict['state'] == 'COMPLETED'
+    assert fw_dict['launches'][0]['action']['stored_data']['returncode'] == 12
 
     # Clean up the tempdiretory
     shutil.rmtree(str(ldir))

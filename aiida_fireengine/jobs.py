@@ -7,7 +7,8 @@ from fireworks.user_objects.firetasks.script_task import ScriptTask
 from fireworks.core.firework import Firework
 from aiida_fireengine.common import RESERVED_CATEGORY
 
-RUN_SCRIPT_TEMPLATE = Template("""
+RUN_SCRIPT_TEMPLATE = Template(r"""
+printf "\ntouch .FINISHED" >> ${submit_script_name}
 chmod +x ${submit_script_name}
 
 timeout ${walltime_seconds}s ./${submit_script_name} > ${stdout_fname} 2> ${stderr_fname} & 
@@ -21,6 +22,12 @@ while [[ -e /proc/$$! ]]; do
     fi
     sleep 5
 done
+
+if [ ! -f .FINISHED ]; then
+    echo Script timed out
+    exit 12
+fi
+
 echo ALL DONE
 """)
 
@@ -65,6 +72,9 @@ class AiiDAJobFirework(Firework):
             walltime_seconds=walltime,
             stdout_fname=stdout_fname,
             stderr_fname=stderr_fname)
-        task = ScriptTask(script=script, shell_exe='/bin/bash')
+        task = ScriptTask(script=script,
+                          shell_exe='/bin/bash',
+                          fizzle_bad_rc=False,
+                          defuse_bad_rc=False)
 
         super().__init__(tasks=[task], spec=spec, name=job_name)
