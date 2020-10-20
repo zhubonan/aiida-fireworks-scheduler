@@ -10,8 +10,8 @@ from aiida_fireengine.common import RESERVED_CATEGORY
 RUN_SCRIPT_TEMPLATE = Template("""
 chmod +x ${submit_script_name}
 
-./${submit_script_name} > ${stdout_fname} 2> ${stderr_fname} & 
-
+timeout ${walltime_seconds}s ./${submit_script_name} > ${stdout_fname} 2> ${stderr_fname} & 
+sleep 1
 chmod -x ${submit_script_name}
 
 while [[ -e /proc/$$! ]]; do
@@ -62,6 +62,7 @@ class AiiDAJobFirework(Firework):
 
         script = RUN_SCRIPT_TEMPLATE.substitute(
             submit_script_name=submit_script_name,
+            walltime_seconds=walltime,
             stdout_fname=stdout_fname,
             stderr_fname=stderr_fname)
         task = ScriptTask(script=script, shell_exe='/bin/bash')
