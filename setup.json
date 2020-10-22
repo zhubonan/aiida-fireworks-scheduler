@@ -2,7 +2,7 @@
     "name": "aiida-fireworks-scheduler",
     "author": "Bonan Zhu",
     "author_email": "zhubonan@outlook.com",
-    "description": "AiiDA plugin to allow using `fireworks` as the executation engine for `CalcJob`.",
+    "description": "AiiDA plugin to allow using `fireworks` as the execution engine for `CalcJob`.",
     "url": "https://github.com/zhubonan/aiida-fireworks-scheduler",
     "license": "MIT",
     "classifiers": [
