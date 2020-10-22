@@ -30,7 +30,7 @@ class SchedulerAwareness:
         return os.environ['USER']
 
     def get_remaining_seconds(self):
-        """Get the reminaing time before this job gets killed"""
+        """Get the remaining time before this job gets killed"""
         raise NotImplementedError
 
     @property
@@ -193,11 +193,11 @@ class SlurmAwareness(SchedulerAwareness):
         return self._job_id
 
     def _readtask_info(self):
-        """A function to extract information from environmental varibles
+        """A function to extract information from environmental variables
         SLURM_JOB_ID unique to each job
         Return an dictionnary contain job information.
         If not in slurm, return None
-        TODO Refector avoid saving intermediate file
+        TODO Refactor avoid saving intermediate file
         """
         # We proceeed
         sinfo_dict = {}
@@ -241,7 +241,7 @@ class SlurmAwareness(SchedulerAwareness):
         return end_time
 
     def get_remaining_seconds(self):
-        """Return the reminaing time in seconds"""
+        """Return the remaining time in seconds"""
         return int((self.get_end_time() - datetime.now()).total_seconds())
 
     def get_n_cpus(self):

@@ -230,8 +230,8 @@ def test_kill(launchpad, dummy_job):
     """Test killing jobs"""
 
     job_id = str(list(dummy_job.values())[0])
-    scheulder = FwScheduler(launchpad)
-    assert scheulder.kill(job_id)
+    scheduler = FwScheduler(launchpad)
+    assert scheduler.kill(job_id)
 
     ids = launchpad.get_fw_ids(query={'state': 'READY'})
     assert not ids

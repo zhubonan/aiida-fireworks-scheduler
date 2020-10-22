@@ -1,5 +1,5 @@
 """
-Test the AiiDAFWworker
+Test the AiiDAFWorker
 """
 
 import pytest
