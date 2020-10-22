@@ -17,8 +17,8 @@ from aiida.schedulers import SchedulerError, SchedulerParsingError
 from aiida.schedulers.datastructures import (JobInfo, JobState,
                                              ParEnvJobResource)
 
-from aiida_fireengine.jobs import AiiDAJobFirework
-from aiida_fireengine.common import DEFAULT_USERNAME
+from aiida_fireworks_scheduler.jobs import AiiDAJobFirework
+from aiida_fireworks_scheduler.common import DEFAULT_USERNAME
 
 # pylint: disable=protected-access,too-many-locals
 

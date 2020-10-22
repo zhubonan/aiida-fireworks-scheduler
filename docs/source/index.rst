@@ -13,7 +13,7 @@ The aiida-fireengine plugin for `AiiDA`_
 
    user_guide/index
    developer_guide/index
-   API documentation <apidoc/aiida_fireengine>
+   API documentation <apidoc/aiida_fireworks_scheduler>
 
 If you use this plugin for your research, please cite the following work:
 

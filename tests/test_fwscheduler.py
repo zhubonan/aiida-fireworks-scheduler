@@ -15,8 +15,8 @@ from aiida.common.extendeddicts import AttributeDict
 from aiida.schedulers.datastructures import JobInfo, JobState
 from aiida.schedulers import SchedulerParsingError
 
-from aiida_fireengine.fwscheduler import FwJobResource, FwScheduler, parse_sge_script
-from aiida_fireengine.jobs import AiiDAJobFirework
+from aiida_fireworks_scheduler.fwscheduler import FwJobResource, FwScheduler, parse_sge_script
+from aiida_fireworks_scheduler.jobs import AiiDAJobFirework
 
 TEST_DIR = os.path.dirname(os.path.realpath(__file__))
 DATA_DIR = Path(TEST_DIR) / 'data'

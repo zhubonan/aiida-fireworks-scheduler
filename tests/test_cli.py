@@ -8,7 +8,7 @@ import shutil
 import pytest
 
 from click.testing import CliRunner
-from aiida_fireengine.cmdline import generate_worker, duplicate_fe
+from aiida_fireworks_scheduler.cmdline import generate_worker, duplicate_fe
 
 # pylint: disable=import-outside-toplevel,no-member,redefined-outer-name
 LOCALHOST_NAME = 'localhost-test'
@@ -133,7 +133,7 @@ def test_duplicate(cmd_test_env):
 
 def test_worker(cmd_test_env):
     """Test worker command"""
-    from aiida_fireengine.fworker import AiiDAFWorker, DEFAULT_USERNAME
+    from aiida_fireworks_scheduler.fworker import AiiDAFWorker, DEFAULT_USERNAME
     runner = CliRunner()
     _ = cmd_test_env
 

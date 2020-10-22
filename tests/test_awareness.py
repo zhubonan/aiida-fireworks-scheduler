@@ -4,7 +4,7 @@ Tests for the awareness module
 import os
 
 import pytest
-from aiida_fireengine.awareness import DummyAwareness, SGEAwareness, SlurmAwareness
+from aiida_fireworks_scheduler.awareness import DummyAwareness, SGEAwareness, SlurmAwareness
 
 
 def test_dummy():

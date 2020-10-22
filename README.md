@@ -19,11 +19,11 @@ In addition, AiiDA jobs can be run along side other workflows in fireworks.
 * [`.github/`](.github/): [Github Actions](https://github.com/features/actions) configuration
   * [`ci.yml`](.github/workflows/ci.yml): runs tests, checks test coverage and builds documentation at every new commit
   * [`publish-on-pypi.yml`](.github/workflows/publish-on-pypi.yml): automatically deploy git tags to PyPI - just generate a [PyPI API token](https://pypi.org/help/#apitoken) for your PyPI account and add it to the `pypi_token` secret of your github repository
-* [`aiida_fireengine/`](aiida_fireengine/): The main source code of the plugin package
-  * [`fwscheduler.py`](aiida_fireengine/fwscheduler.py): A new `FWScheduler` class.
-  * [`scripts/arlauncher.py`](aiida_fireengine/scripts/arlaunch_run.py): A special `rlaunch` script for launching jobs respecting the walltime limits.
-  * [`jobs.py`](aiida_fireengine/jobs.py): Specialised `AiiDAJobFirework` for running AiiDA prepared jobs.
-  * [`fworker.py`](aiida_fireengine/fworker.py): Specialised `AiiDAFWorker` to generate query for selecting appropriate jobs from the FireServer.
+* [`aiida_fireworks_scheduler/`](aiida_fireworks_scheduler/): The main source code of the plugin package
+  * [`fwscheduler.py`](aiida_fireworks_scheduler/fwscheduler.py): A new `FWScheduler` class.
+  * [`scripts/arlauncher.py`](aiida_fireworks_scheduler/scripts/arlaunch_run.py): A special `rlaunch` script for launching jobs respecting the walltime limits.
+  * [`jobs.py`](aiida_fireworks_scheduler/jobs.py): Specialised `AiiDAJobFirework` for running AiiDA prepared jobs.
+  * [`fworker.py`](aiida_fireworks_scheduler/fworker.py): Specialised `AiiDAFWorker` to generate query for selecting appropriate jobs from the FireServer.
 * [`docs/`](docs/): A documentation template ready for publication on [Read the Docs](http://aiida-diff.readthedocs.io/en/latest/)
 * [`examples/`](examples/): An example of how to submit a calculation using this plugin
 * [`tests/`](tests/): Basic regression tests using the [pytest](https://docs.pytest.org/en/latest/) framework (submitting a calculation, ...). Install `pip install -e .[testing]` and run `pytest`.

@@ -1,5 +1,5 @@
 """
-aiida_fireengine
+aiida_fireworks_scheduler
 
 AiiDA plugin to allow using `fireworks` as the executation engine for `CalcJob`.
 """

@@ -1,6 +1,6 @@
 """Check that version numbers match.
 
-Check version number in setup.json and aiida_fireengine/__init__.py and make sure
+Check version number in setup.json and aiida_fireworks_scheduler/__init__.py and make sure
 they match.
 """
 from __future__ import absolute_import
@@ -19,15 +19,15 @@ with open(setup_path) as f:
 
 # Get version from python package
 sys.path.insert(0, os.path.join(this_path, os.pardir))
-import aiida_fireengine  # pylint: disable=wrong-import-position
-version = aiida_fireengine.__version__
+import aiida_fireworks_scheduler  # pylint: disable=wrong-import-position
+version = aiida_fireworks_scheduler.__version__
 
 if version != setup_content['version']:
     print("Version number mismatch detected:")
     print("Version number in '{}': {}".format(setup_fname,
                                               setup_content['version']))
     print("Version number in '{}/__init__.py': {}".format(
-        'aiida_fireengine', version))
+        'aiida_fireworks_scheduler', version))
     sys.exit(1)
 
 # Overwrite version in setup.json

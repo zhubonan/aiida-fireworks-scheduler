@@ -10,9 +10,9 @@ from fireworks.core.fworker import FWorker
 from fireworks.utilities.fw_serializers import recursive_serialize, \
     recursive_deserialize, DATETIME_HANDLER
 
-from aiida_fireengine.awareness import SchedulerAwareness
+from aiida_fireworks_scheduler.awareness import SchedulerAwareness
 
-from aiida_fireengine.common import DEFAULT_USERNAME, RESERVED_CATEGORY
+from aiida_fireworks_scheduler.common import DEFAULT_USERNAME, RESERVED_CATEGORY
 
 
 class AiiDAFWorker(FWorker):

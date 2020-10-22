@@ -13,7 +13,7 @@ from fireworks.core.rocket_launcher import rapidfire, launch_rocket
 from fireworks.utilities.fw_utilities import get_my_host, get_my_ip, get_fw_logger
 from fireworks.features.multi_launcher import launch_multiprocess
 
-from aiida_fireengine.fworker import AiiDAFWorker
+from aiida_fireworks_scheduler.fworker import AiiDAFWorker
 
 #pylint: disable=too-many-statements,line-too-long,import-outside-toplevel
 

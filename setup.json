@@ -15,13 +15,13 @@
     "version": "0.1.0a0",
     "entry_points": {
         "aiida.schedulers": [
-            "fireworks = aiida_fireengine.fwscheduler:FwScheduler"
+            "fireworks = aiida_fireworks_scheduler.fwscheduler:FwScheduler"
         ],
         "aiida.cmdline.data": [
-            "fireengine = aiida_fireengine.cmdline:fe_cli" 
+            "fireengine = aiida_fireworks_scheduler.cmdline:fe_cli" 
         ],
         "console_scripts": [
-            "arlaunch = aiida_fireengine.scripts.arlaunch_run:arlaunch"
+            "arlaunch = aiida_fireworks_scheduler.scripts.arlaunch_run:arlaunch"
         ]
     },
     "include_package_data": true,

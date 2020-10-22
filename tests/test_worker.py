@@ -3,7 +3,7 @@ Test the AiiDAFWworker
 """
 
 import pytest
-from aiida_fireengine.fworker import AiiDAFWorker, DEFAULT_USERNAME
+from aiida_fireworks_scheduler.fworker import AiiDAFWorker, DEFAULT_USERNAME
 # pylint: disable=redefined-outer-name
 
 
