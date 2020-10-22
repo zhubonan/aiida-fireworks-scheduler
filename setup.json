@@ -18,7 +18,7 @@
             "fireworks = aiida_fireworks_scheduler.fwscheduler:FwScheduler"
         ],
         "aiida.cmdline.data": [
-            "fireengine = aiida_fireworks_scheduler.cmdline:fe_cli" 
+            "fireworks-scheduler = aiida_fireworks_scheduler.cmdline:fw_cli" 
         ],
         "console_scripts": [
             "arlaunch = aiida_fireworks_scheduler.scripts.arlaunch_run:arlaunch"

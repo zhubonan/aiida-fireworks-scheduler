@@ -16,10 +16,10 @@ from aiida_fireworks_scheduler.fworker import AiiDAFWorker
 # pylint: disable=import-outside-toplevel,no-member
 
 
-@verdi_data.group("fireengine")
-def fe_cli():
+@verdi_data.group("fireworks-scheduler")
+def fw_cli():
     """Command line interface for aiida-fireworks-scheduler"""
-@fe_cli.command("duplicate-computer")
+@fw_cli.command("duplicate-computer")
 @options.COMPUTER()
 @options.INPUT_PLUGIN()
 @click.option('--include-codes',
@@ -81,7 +81,7 @@ def duplicate_fe(computer, include_codes, input_plugin, suffix, dry_run):
         echo.echo_info("This is a dry-run nothing has been saved.")
 
 
-@fe_cli.command("generate-worker")
+@fw_cli.command("generate-worker")
 @options.COMPUTER()
 @click.option("--mpinp", type=int, help="Number of MPI processes.")
 @click.option("--name", type=str, help="Name of the worker.")

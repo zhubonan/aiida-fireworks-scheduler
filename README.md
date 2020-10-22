@@ -45,7 +45,7 @@ In addition, AiiDA jobs can be run along side other workflows in fireworks.
 
 * `arlaunch` command for launching jobs on the cluster machine.
 
-* `verdi data fireengine` command line tool for duplicating existing `Computer`/`Cold` for switching to `FwScheduler`.
+* `verdi data fireworks-scheduler` command line tool for duplicating existing `Computer`/`Cold` for switching to `FwScheduler`.
 
 ## Installation
 
@@ -71,7 +71,7 @@ Note that you must configure the `LAUNCHPAD_LOC` setting in the file as defined 
 In addition, on the remote machine, setup your `my_fworker.yaml` with special directives for identifying the computer and username. These files can be generated using:
 
 ```shell
-verdi data fireengine generate-worker -Y COMPUTER -mpinp NUM_MPI_PROCESSORS
+verdi data fireworks-scheduler generate-worker -Y COMPUTER -mpinp NUM_MPI_PROCESSORS
 ```
 
 Note that each *worker" can only launch jobs of a particular size (number of MPI processors). But you can always combine multiple workers in one or more cluster jobs.
