@@ -26,7 +26,7 @@ def fireengine_code(aiida_local_code_factory):
 
 MODULE_DIR = Path(__file__).parent
 DATA_DIR = MODULE_DIR / 'test_data'
-TESTDB_NAME = "aiida-fireengine-test"
+TESTDB_NAME = "aiida-fireworks-scheduler-test"
 
 
 @pytest.fixture(scope='session')

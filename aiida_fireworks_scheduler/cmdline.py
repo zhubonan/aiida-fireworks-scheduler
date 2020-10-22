@@ -18,7 +18,7 @@ from aiida_fireworks_scheduler.fworker import AiiDAFWorker
 
 @verdi_data.group("fireengine")
 def fe_cli():
-    """Command line interface for aiida-fireengine"""
+    """Command line interface for aiida-fireworks-scheduler"""
 @fe_cli.command("duplicate-computer")
 @options.COMPUTER()
 @options.INPUT_PLUGIN()

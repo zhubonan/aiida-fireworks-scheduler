@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Sphinx configuration for aiida-fireengine
+# Sphinx configuration for aiida-fireworks-scheduler
 #
 # This file is execfile()d with the current directory set to its
 # containing dir.
@@ -70,7 +70,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'aiida-fireengine'
+project = u'aiida-fireworks-scheduler'
 copyright_first_year = "2020"
 copyright_owners = "Bonan Zhu"
 
@@ -211,7 +211,7 @@ html_show_sourcelink = False
 # If true, an OpenSearch description file will be output, and all pages will
 # contain a <link> tag referring to it.  The value of this option must be the
 # base URL from which the finished HTML is served.
-html_use_opensearch = 'http://aiida-fireengine.readthedocs.io'
+html_use_opensearch = 'http://aiida-fireworks-scheduler.readthedocs.io'
 
 # This is the file name suffix for HTML files (e.g. ".xhtml").
 #html_file_suffix = None
@@ -231,7 +231,7 @@ html_search_language = 'en'
 #html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'aiida-fireengine-doc'
+htmlhelp_basename = 'aiida-fireworks-scheduler-doc'
 
 # -- Options for LaTeX output ---------------------------------------------
 

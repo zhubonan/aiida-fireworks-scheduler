@@ -1,9 +1,9 @@
-[![Build Status](https://github.com/zhubonan/aiida-fireengine/workflows/ci/badge.svg?branch=master)](https://github.com/zhubonan/aiida-fireengine/actions)
-[![Coverage Status](https://coveralls.io/repos/github/zhubonan/aiida-fireengine/badge.svg?branch=master)](https://coveralls.io/github/zhubonan/aiida-fireengine?branch=master)
-[![Docs status](https://readthedocs.org/projects/aiida-fireengine/badge)](http://aiida-fireengine.readthedocs.io/)
-[![PyPI version](https://badge.fury.io/py/aiida-fireengine.svg)](https://badge.fury.io/py/aiida-fireengine)
+[![Build Status](https://github.com/zhubonan/aiida-fireworks-scheduler/workflows/ci/badge.svg?branch=master)](https://github.com/zhubonan/aiida-fireworks-scheduler/actions)
+[![Coverage Status](https://coveralls.io/repos/github/zhubonan/aiida-fireworks-scheduler/badge.svg?branch=master)](https://coveralls.io/github/zhubonan/aiida-fireworks-scheduler?branch=master)
+[![Docs status](https://readthedocs.org/projects/aiida-fireworks-scheduler/badge)](http://aiida-fireworks-scheduler.readthedocs.io/)
+[![PyPI version](https://badge.fury.io/py/aiida-fireworks-scheduler.svg)](https://badge.fury.io/py/aiida-fireworks-scheduler)
 
-# aiida-fireengine
+# aiida-fireworks-scheduler
 
 AiiDA plugin for using `fireworks` as the execution engine for `CalcJobProcess`.
 
@@ -52,13 +52,13 @@ In addition, AiiDA jobs can be run along side other workflows in fireworks.
 On the local machine where AiiDA is installed:
 
 ```shell
-pip install aiida-fireengine[local]
+pip install aiida-fireworks-scheduler[local]
 ```
 
 On the remote machine where jobs to be launched:
 
 ```shell
-pip install aiida-fireengine
+pip install aiida-fireworks-scheduler
 ```
 
 ## Usage
@@ -81,14 +81,14 @@ At runtime, jobs needs to be launched with the `arlaunch` command on the remote 
 ## Development
 
 ```shell
-git clone https://github.com/zhubonan/aiida-fireengine .
-cd aiida-fireengine
+git clone https://github.com/zhubonan/aiida-fireworks-scheduler .
+cd aiida-fireworks-scheduler
 pip install -e .[pre-commit,testing]  # install extra dependencies
 pre-commit install  # install pre-commit hooks
 pytest -v  # discover and run all tests
 ```
 
-See the [developer guide](http://aiida-fireengine.readthedocs.io/en/latest/developer_guide/index.html) for more information.
+See the [developer guide](http://aiida-fireworks-scheduler.readthedocs.io/en/latest/developer_guide/index.html) for more information.
 
 ## License
 
