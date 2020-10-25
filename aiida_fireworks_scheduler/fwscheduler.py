@@ -27,7 +27,13 @@ _MAP_STATUS_FW = {
     'WAITING': JobState.QUEUED,
     'READY': JobState.QUEUED,
     'RESERVED': JobState.QUEUED,
-    'RUNNING': JobState.RUNNING
+    'RUNNING': JobState.RUNNING,
+    'COMPLETED': JobState.DONE,
+    'ARCHIVED': JobState.UNDETERMINED,
+    'DEFUSED': JobState.SUSPENDED,
+    # Usually FIZZLED is an indication of having some problems,
+    # set it to UNDETERMINED to allow further investigations
+    'FIZZLED': JobState.UNDETERMINED
 }
 
 
@@ -95,8 +101,11 @@ class FwScheduler(SgeScheduler):
         query = {
             "spec._aiida_job_info.computer_id":
             computer_id,  # Limit to this machine
+            # Ignore completed and archived jobs
             "state": {
-                "$in": ["PAUSED", "WAITING", "READY", "RESERVED", "RUNNING"]
+                "$not": {
+                    "$in": ["COMPLETED", "ARCHIVED"]
+                }
             }
         }
 
@@ -109,8 +118,8 @@ class FwScheduler(SgeScheduler):
         fw_ids = lpad.get_fw_ids(query)
         joblist = []
         for fid in fw_ids:
-            # Get the information of the fireworks in the dict format this is more robust
-            # than instantiation
+            # Get the information of the fireworks in the dict format
+            # this is more robust than getting Fireworks objects
             try:
                 fw_dict = lpad.get_fw_dict_by_id(fid)
             except ValueError:
