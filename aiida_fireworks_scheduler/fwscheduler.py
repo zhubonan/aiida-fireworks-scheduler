@@ -88,11 +88,15 @@ class FwScheduler(SgeScheduler):
     def __init__(self, launchpad=None):
         super().__init__()
         # Here store the launchpad in the class attribute so it can be reused....
-        if (launchpad is None) and (self._lpad is None):
-            FwScheduler._lpad = LaunchPad.from_file(LAUNCHPAD_LOC)
-        else:
+        if launchpad is not None:
+            self.lpad = launchpad
+            # Keep the launchpad
             FwScheduler._lpad = launchpad
-        self.lpad = FwScheduler._lpad
+        else:
+            # Create and save the launchpad
+            if FwScheduler._lpad is None:
+                FwScheduler._lpad = LaunchPad.from_file(LAUNCHPAD_LOC)
+            self.lpad = FwScheduler._lpad
 
     def get_jobs(self, jobs=None, user=None, as_dict=False):
         """
