@@ -26,6 +26,8 @@ done
 if [ ! -f .FINISHED ]; then
     echo Script timed out
     exit 12
+else
+    rm .FINISHED
 fi
 
 echo ALL DONE
