@@ -223,17 +223,18 @@ class FwScheduler(SgeScheduler):
         if fw_dict['state'] == 'RUNNING':
             try:
                 launch_dir = fw_dict['spec']['_aiida_job_info'][
-                    '_remote_work_dir']
+                    'remote_work_dir']
                 stop_file = os.path.join(launch_dir, 'AIIDA_STOP')
                 result = self.transport.exec_command_wait(f'touch {stop_file}')
                 if result[0] == 0:
                     return True
                 self.logger.error(
-                    f"Error placing AIIDA_STOP file.\nMessage: {result[2]}")
+                    f"Remote command execution failed.\nSTDERR captured: {result[2]}"
+                )
                 return False
             except Exception as error:  # pylint: disable=broad-except
                 self.logger.error(
-                    f"Error placing AIIDA_STOP file.\nError {error.args}")
+                    f"Error placing AIIDA_STOP file.\nError {error}")
                 return False
         # Otherwise just defuse the job in the launchpad
         else:
@@ -241,7 +242,7 @@ class FwScheduler(SgeScheduler):
                 firework = self.lpad.defuse_fw(int(jobid))
             except Exception as error:  # pylint: disable=broad-except
                 self.logger.error(
-                    f"Error defusing waiting Firework.\nError {error.args}")
+                    f"Error defusing waiting Firework.\nError {error}")
                 return False
             else:
                 return bool(firework)
