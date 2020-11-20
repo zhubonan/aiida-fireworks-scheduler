@@ -213,7 +213,9 @@ class FwScheduler(SgeScheduler):
         """
         try:
             fw_dict = self.lpad.get_fw_dict_by_id(int(jobid))
-        except Exception:  # pylint: disable=broad-except
+        except Exception as error:  # pylint: disable=broad-except
+            self.logger.error(
+                f"Cannot find the relevant fireworks.\n Error {error.args}")
             return False
 
         # If the job is running - request to stop the job by putting a AIIDA_STOP file
@@ -223,15 +225,23 @@ class FwScheduler(SgeScheduler):
                 launch_dir = fw_dict['spec']['_aiida_job_info'][
                     '_remote_work_dir']
                 stop_file = os.path.join(launch_dir, 'AIIDA_STOP')
-                self.transport.exec_command_wait(f'touch {stop_file}')
-                return True
-            except Exception:  # pylint: disable=broad-except
+                result = self.transport.exec_command_wait(f'touch {stop_file}')
+                if result[0] == 0:
+                    return True
+                self.logger.error(
+                    f"Error placing AIIDA_STOP file.\nMessage: {result[2]}")
+                return False
+            except Exception as error:  # pylint: disable=broad-except
+                self.logger.error(
+                    f"Error placing AIIDA_STOP file.\nError {error.args}")
                 return False
         # Otherwise just defuse the job in the launchpad
         else:
             try:
                 firework = self.lpad.defuse_fw(int(jobid))
-            except Exception:  # pylint: disable=broad-except
+            except Exception as error:  # pylint: disable=broad-except
+                self.logger.error(
+                    f"Error defusing waiting Firework.\nError {error.args}")
                 return False
             else:
                 return bool(firework)
