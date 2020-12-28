@@ -46,7 +46,7 @@ class AiiDAFWorker(FWorker):
         super().__init__(*args, **kwargs)
 
     @property
-    def query_(self):
+    def query(self):
         """Query used for selecting fireworks"""
 
         # This is the usual conventional stuff

@@ -20,7 +20,7 @@ def test_worker_query(worker):
     assert "$or" in query
 
     fw_query = query["$or"][1]
-    aiida_query = query["$or"][0]
+    aiida_query = query["$or"][0]['$and'][0]
 
     assert fw_query['spec._category']['$ne'] == 'AIIDA_RESERVED_CATEGORY'
     assert fw_query['spec._category']['$eq'] == 'test'
