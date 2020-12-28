@@ -19,11 +19,22 @@ def test_worker_query(worker):
 
     assert "$or" in query
 
-    fw_query = query["$or"][1]
-    aiida_query = query["$or"][0]['$and'][0]
+    fw_query = query["$or"][1]['$and'][0]
+    fw_walltime_query = query["$or"][1]['$and'][1]
+    aiida_query = query["$or"][0]
 
     assert fw_query['spec._category']['$ne'] == 'AIIDA_RESERVED_CATEGORY'
     assert fw_query['spec._category']['$eq'] == 'test'
+    assert fw_walltime_query['$or'][0] == {
+        'spec._walltime_seconds': {
+            '$exists': False
+        }
+    }
+    assert fw_walltime_query['$or'][1] == {
+        'spec._walltime_seconds': {
+            '$lt': 2591940
+        }
+    }
 
     assert aiida_query['spec._aiida_job_info.walltime'][
         '$lt'] == worker.sch_aware.get_remaining_seconds(
