@@ -46,7 +46,8 @@ class AiiDAFWorker(FWorker):
         super().__init__(*args, **kwargs)
 
     @property
-    def query(self):
+    def query_(self):
+        """Query used for selecting fireworks"""
 
         # This is the usual conventional stuff
         query_ = dict(self._query)
@@ -82,6 +83,22 @@ class AiiDAFWorker(FWorker):
         # specific conditions as defined below
         query_['spec._category']['$ne'] = RESERVED_CATEGORY
 
+        # Either not having a walltime limit or have a one that is less than the
+        # current limit
+        walltime_condition = {
+            '$or': [{
+                'spec._walltime_seconds': {
+                    '$exists': False
+                }
+            }, {
+                'spec._walltime_seconds': {
+                    '$lt': self.seconds_left - self.SECONDS_SAFE_INTERVAL
+                }
+            }]
+        }
+        # Combined query for the standard fireworks jobs
+        query_fw = {'$and': [query_, walltime_condition]}
+
         # AiiDA related queries
         query_aiida = {
             'spec._aiida_job_info.computer_id': self.computer_id,
@@ -94,7 +111,7 @@ class AiiDAFWorker(FWorker):
             query_aiida['spec._aiida_job_info.mpinp'] = self.mpinp
 
         # Need to satisfy either of the two sub queries
-        return {'$or': [query_aiida, query_]}
+        return {'$or': [query_aiida, query_fw]}
 
     @property
     def seconds_left(self):
