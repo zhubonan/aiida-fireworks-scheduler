@@ -78,6 +78,14 @@ Note that each *worker" can only launch jobs of a particular size (number of MPI
 
 At runtime, jobs needs to be launched with the `arlaunch` command on the remote machine.
 
+### Adding walltime selectors for standard fireworks jobs
+
+Standard fireworks jobs can also be selected based on the requested walltime using `arlaunch`.
+If a job has `spec._walltime_seconds` key, it will only be selected to run if there is
+sufficient time left.
+However, unlike AiiDA jobs, this walltime limit is not enforced, and the launch can proceed
+even if the requested seconds have elapsed.
+
 ## Development
 
 ```shell
