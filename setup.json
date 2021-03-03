@@ -30,7 +30,7 @@
     "install_requires": [
         "six",
         "voluptuous",
-        "fireworks==1.9.5"
+        "fireworks>=1.9.5,<2"
     ],
     "extras_require": {
         "local": [
