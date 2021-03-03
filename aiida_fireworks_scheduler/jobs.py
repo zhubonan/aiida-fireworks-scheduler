@@ -18,7 +18,7 @@ RUN_SCRIPT_TEMPLATE = Template(r"""
 printf "\ntouch .FINISHED" >> ${submit_script_name}
 chmod +x ${submit_script_name}
 
-timeout ${walltime_seconds}s env -i HOME=$HOME bash -l ./${submit_script_name} > ${stdout_fname} 2> ${stderr_fname} & 
+timeout ${walltime_seconds}s env -i HOME=$$HOME bash -l ./${submit_script_name} > ${stdout_fname} 2> ${stderr_fname} & 
 sleep 1
 chmod -x ${submit_script_name}
 
