@@ -7,11 +7,18 @@ from fireworks.user_objects.firetasks.script_task import ScriptTask
 from fireworks.core.firework import Firework
 from aiida_fireworks_scheduler.common import RESERVED_CATEGORY
 
+# Here the goal is to run the script in an environment as close to that will be used by
+# the actual scheduler as possible.
+
+# Here the command assumes that the runtime environment sources the .bashrc, e.g. it is a login shell.
+# This is known to be untrue the case for SLURM, but here we still want to have this behaviour
+# well defined.
+
 RUN_SCRIPT_TEMPLATE = Template(r"""
 printf "\ntouch .FINISHED" >> ${submit_script_name}
 chmod +x ${submit_script_name}
 
-timeout ${walltime_seconds}s ./${submit_script_name} > ${stdout_fname} 2> ${stderr_fname} & 
+timeout ${walltime_seconds}s env -i HOME=$HOME bash -l ./${submit_script_name} > ${stdout_fname} 2> ${stderr_fname} & 
 sleep 1
 chmod -x ${submit_script_name}
 
