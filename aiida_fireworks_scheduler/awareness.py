@@ -1,5 +1,6 @@
 """
 Runtime scheduler awareness
+:noindex:
 """
 import subprocess
 import os
@@ -12,7 +13,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class SchedulerAwareness:
-    """Schduler object"""
+    """Scheduler object"""
     def __init__(self, *args, **kwargs):
         """SchedulerAwareness object for accessing information from the scheduler"""
         del args
@@ -60,14 +61,17 @@ class DummyAwareness(SchedulerAwareness):
     DEFAULT_REMAINING_TIME = 3600 * 24 * 30
 
     def __init__(self, *args, **kwargs):
+        """Instantiate an DummyAwareness - as if we have lots of time to run"""
         super(DummyAwareness, self).__init__(*args, **kwargs)
         self._job_id = str('0')
 
     def get_n_cpus(self):
+        """Get the number of CPUS"""
         return 4
 
     @property
     def job_id(self):
+        """The id of the job"""
         return self._job_id
 
     def get_remaining_seconds(self):
@@ -76,6 +80,7 @@ class DummyAwareness(SchedulerAwareness):
 
     @property
     def is_in_job(self):
+        """Are we inside an scheduler job - always true for a dummy"""
         return True
 
 
@@ -188,6 +193,7 @@ class SlurmAwareness(SchedulerAwareness):
 
     @property
     def job_id(self):
+        """Id of the job"""
         if self._job_id is None:
             self._job_id = os.environ.get('SLURM_JOB_ID')
         return self._job_id
