@@ -28,7 +28,7 @@ This can be done by duplicating existing computers and selecting the ``fireworks
 Alternatively, existing ``Code`` and ``Computers`` using standard AiiDA scheduler may be migrated using the command ``verdi data fireworks-scheduler duplicate-computer``.
 
 The plugin should also be installed on the remote computer. Each AiiDA job is identified with its ``Computer``'s hostname and the number of MPI processes to be launched.
-During the run time, the jobs are selected by the Worker (see the `fireowrks`_ documentation for details), which is defined with a yaml file. These files may be generated 
+During the run time, the jobs are selected by the Worker (see the `fireworks`_ documentation for details), which is defined with a yaml file. These files may be generated 
 using the command ``verdi data fireworks-scheduler generate-worker``. 
 
 Jobs submitted can be launched with the following command on the remote computer within the job script submitted to the real scheduler::
