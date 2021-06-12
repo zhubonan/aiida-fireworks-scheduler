@@ -39,7 +39,7 @@ Because now AiiDA merely registers jobs to the *LaunchPad* server, the user is n
 
 .. rubric:: Footnotes
 
-.. [#f1] A *Firework* is like a *CalculationJob* in AiiDA - it run some code using the computer. Here, it simply executes the original AiiDA submission script as if it is run in a cluster allocation. 
+.. [#f1] A *Firework* is like a *CalculationJob* in AiiDA - it runs some code using the computer. Here, it simply executes the original AiiDA submission script as if it is run in a cluster allocation. 
 
 .. toctree::
    :maxdepth: 2
