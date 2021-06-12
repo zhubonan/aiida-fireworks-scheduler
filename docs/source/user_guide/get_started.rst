@@ -61,7 +61,7 @@ A few other options are supported:
     The AiiDA job will be terminated if it exceeds the wall clock limit.
 
   priority
-    Specifies the priority of the underlying ``Firework`` (see `here <https://materialsproject.github.io/fireworks/priority_tutorial.html>`_ for more) , those with higher priority will run first.
+    Specifies the priority of the underlying ``Firework`` (see `this page <https://materialsproject.github.io/fireworks/priority_tutorial.html>`_ for more) , those with higher priority will run first.
     AiiDA treats ``priority`` as a string so a string representation of the integer priority value can be passed. The default priority is ``'100'``.
 
 On the remote Computer
