@@ -12,7 +12,7 @@ Installation
 
 Use the following commands to install the plugin::
 
-    git clone https://github.com/zhubonan/aiida-fireworks-scheduler .
+    git clone https://github.com/zhubonan/aiida-fireworks-scheduler
     cd aiida-fireworks-scheduler
     pip install -e .  # Note this will not install aiida, as you may need to do this on the remote machine!
     #pip install -e .[pre-commit,testing] # install extras for more features
