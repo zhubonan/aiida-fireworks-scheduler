@@ -6,6 +6,20 @@ This plugin supplies an special scheduler that uses `fireworks`_ as the backend 
 The main advantage of doing so is that task farming can be facilitated, e.g. a single scheduler jobs may run multiple AiiDA calculations in serial or in parallel. 
 In addition, this also means that AiiDA calculations can be launched alongside those using `fireworks`_, and resources may be allocated dynamically based on priority of each jobs. 
 
+.. note::
+
+  Prerequisites:
+
+  1. A working MongoDB server 
+  2. Remote cluster is not *fenced*, e.g. the *compute nodes* have internet access at run time.
+  3. Remote cluster's schedulers is one of the following:
+    - SLURM
+    - SGE
+  4. Python environments are available on the remote cluster (typically through `conda` or `virtualenv`)
+  
+  The second one is not necessary if local arrangements can be made to for hosting the MongoDB server inside the firewall.
+  Support of other schedulers can be implemented easily if you know how to fetch job time limit from inside a job.
+
 
 Installation
 ++++++++++++
@@ -41,6 +55,16 @@ Which should return exactly one *Firework* if there is any, or give an empty out
     Please confirm the following works:
     - `lpad get_fws` work on both *local* and *remote* computers.
     - `rlaunch` can be used to launch workflow on the *remote* computer. 
+
+.. note::
+    A MongoDB server is required to use this plugin, a source of free server is: https://www.mongodb.com/atlas/database.
+    The server only stores a minimum amount of data and does not require lot of storage space, e.g. using the free-tier is usually fine.
+    Alternatively, there are many VPS providers that offer pre-configured MongoDB instances.
+    For the fireworks' tutorials, you can install MongoDB locally, it will not work for production calculations.
+    This is because the server need to be reachable by both the local workstation (where AiiDA is installed) and the remote cluster. 
+    If the remote cluster does not have internet access, then you will have to make certain arrangements, for example,
+    using one of the post-processing node to host the MongoDB.
+
 
 Setup for AiiDA 
 +++++++++++++++
@@ -98,7 +122,7 @@ At the moment, only SGE and SLURM are supported, but it should be relatively eas
 
 Example job script (SGE):
 
-   .. code-block:: console
+   .. code-block:: bash
 
     #!/bin/bash -l
     # Batch script to fireworks each with 24 mpi processes
@@ -118,6 +142,33 @@ Example job script (SGE):
 
     CMD="arlaunch -l $HOME/Scratch/fw-config/my_launchpad.yaml -w ./aiida-fworker-24core.yaml rapidfire"
     eval $CMD
+
+Task-farming
+
+   .. code-block:: bash
+
+    #!/bin/bash -l
+    # Batch script to fireworks each with 24 mpi processes
+    #$ -l h_rt=48:00:00
+    #$ -l mem=4G
+    #$ -l tmpfs=15G
+    #$ -N aiida-fw-launcher
+
+    # Select the MPI parallel environment and 16 processes.
+    #$ -pe mpi 24
+
+    # Set the working directory to the current directory
+    #$ -cwd
+
+    # Activate the conda environment where aiida-fireworks-scheduler is installed
+    conda activate $HOME/Scratch/fireworks_env
+
+    # Launch 4 concurrent workers, each using 6-cores - only aiida jobs requesting 6 cores will be 
+    # launched by these workers
+    for i in $(seq 4); do
+        arlaunch -l $HOME/Scratch/fw-config/my_launchpad.yaml -w ./aiida-fworker-6core.yaml rapidfire" &
+    done
+    wait
 
 where ``aiida-fworker-24core.yaml`` is the *FireWorker* file. 
 
