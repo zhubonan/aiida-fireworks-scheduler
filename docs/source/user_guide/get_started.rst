@@ -33,6 +33,14 @@ You can check if your set up is working using the following command::
 
 Which should return exactly one *Firework* if there is any, or give an empty output. 
 
+.. warning::
+    Make sure you have *work though* the `basic tutorials`_ for Firework before continuing the setup process.
+    In particular, you should be familiar with using `lpad` and `rlaunch` commands to manage and launch firework's
+    workflows manually. Obviously, there is no need to learn how to deign fireworks workflows so you can skip those.
+
+    Please confirm the following works:
+    - `lpad get_fws` work on both *local* and *remote* computers.
+    - `rlaunch` can be used to launch workflow on the *remote* computer. 
 
 Setup for AiiDA 
 +++++++++++++++
@@ -115,3 +123,4 @@ where ``aiida-fworker-24core.yaml`` is the *FireWorker* file.
 
 .. _fireworks: https://materialsproject.github.io/fireworks/
 .. _installation guide for fireworks: https://materialsproject.github.io/fireworks/installation.html
+.. _basic tutorials: https://materialsproject.github.io/fireworks/index.html#quickstart-and-tutorials
