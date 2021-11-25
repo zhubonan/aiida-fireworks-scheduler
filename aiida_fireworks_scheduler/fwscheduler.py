@@ -84,6 +84,7 @@ class FwScheduler(SgeScheduler):
 
     _job_resource_class = FwJobResource
     _lpad = None
+    FRESH_ENV = True
 
     def __init__(self, launchpad=None):
         super().__init__()
@@ -199,6 +200,7 @@ class FwScheduler(SgeScheduler):
             stderr_fname=options['stderr_fname'],
             stdout_fname=options['stdout_fname'],
             priority=options['priority'],
+            fresh_env=self.FRESH_ENV,
         )
 
         mapping = self.lpad.add_wf(firework)
@@ -296,3 +298,13 @@ def parse_sge_script(local_script_path):
             f"Missing fields: {missing} while parsing the job script")
 
     return options
+
+
+class FwSchedulerKeepEnv(FwScheduler):
+    """
+    A FW-base scheduler that runs the `_aiidasubmit.sh` in the same environment as the submission
+    script.
+
+    This mode of operation is needed by SLURM which uses `srun` directives to launch job steps.
+    """
+    FRESH_ENV = False

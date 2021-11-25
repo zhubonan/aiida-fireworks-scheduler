@@ -51,6 +51,26 @@ def dummy_job(clean_launchpad):
 
 
 @pytest.fixture
+def dummy_job_with_env(clean_launchpad):
+    """Create a dummy job that keeps the environmental variables"""
+    job = AiiDAJobFirework(
+        'localhost',
+        'user',
+        '/tmp/aiida-test',
+        'aiida-1',
+        '_aiidasubmit.sh',
+        walltime=1800,
+        mpinp=2,
+        stdout_fname='_scheduler-stdout.txt',
+        stderr_fname='_scheduler-stderr.txt',
+        fresh_env=False,
+    )
+
+    job_id = clean_launchpad.add_wf(job)
+    return job_id
+
+
+@pytest.fixture
 def short_job(clean_launchpad):
     """Create a dummy job"""
 
@@ -113,6 +133,39 @@ def test_job_run(dummy_job, launchpad):
     assert (ldir / '_scheduler-stdout.txt').exists()
     assert (ldir / '_scheduler-stderr.txt').exists()
 
+    fw_dict = lpad.get_fw_dict_by_id(job_id)
+    assert fw_dict['state'] == 'COMPLETED'
+
+    # Clean up the tempdiretory
+    shutil.rmtree(str(ldir))
+
+
+def test_job_run_with_env(dummy_job, launchpad):
+    """
+    Test running a simple job script with
+    `echo Foo > bar`.
+
+    """
+    lpad = launchpad
+    job_id = list(dummy_job.values())[0]
+    fw_dict = lpad.get_fw_dict_by_id(job_id)
+
+    ldir = Path(fw_dict['spec']['_launch_dir'])
+    assert str(ldir) == '/tmp/aiida-test'
+
+    ldir.mkdir(parents=True, exist_ok=True)
+
+    (ldir / '_aiidasubmit.sh').write_text("echo $Foo > bar")
+    os.environ['Foo'] = 'baz'
+    with keep_cwd():
+        launch_rocket(launchpad, fw_id=job_id)
+
+    assert (ldir / 'bar').exists()
+    assert (ldir / '_scheduler-stdout.txt').exists()
+    assert (ldir / '_scheduler-stderr.txt').exists()
+    assert (ldir / 'bar').read_text() == 'baz'
+
+    os.environ.pop('Foo')
     fw_dict = lpad.get_fw_dict_by_id(job_id)
     assert fw_dict['state'] == 'COMPLETED'
 

@@ -14,11 +14,41 @@ from aiida_fireworks_scheduler.common import RESERVED_CATEGORY
 # This is known to be untrue the case for SLURM, but here we still want to have this behaviour
 # well defined.
 
+# This execute the _aiidasubmit.sh in a fresh login shell. No information about the scheduler is kept to make it sample,
+# not suitable for SLURM which needs environmental variables for alunching job steps with `srun`
 RUN_SCRIPT_TEMPLATE = Template(r"""
 printf "\ntouch .FINISHED" >> ${submit_script_name}
 chmod +x ${submit_script_name}
 
 timeout ${walltime_seconds}s env -i HOME=$$HOME bash -l ./${submit_script_name} > ${stdout_fname} 2> ${stderr_fname} & 
+sleep 1
+chmod -x ${submit_script_name}
+
+while [[ -e /proc/$$! ]]; do
+    if [[ -e AIIDA_STOP ]]; then
+       kill $$!
+       exit 11
+    fi
+    sleep 5
+done
+
+if [ ! -f .FINISHED ]; then
+    echo Script timed out
+    exit 12
+else
+    rm .FINISHED
+fi
+
+echo ALL DONE
+""")
+
+# Execute our _aiidasubmit.sh directly in a shell launched by the current environment.
+# This is needed for advanced schedulers with job step support
+RUN_SCRIPT_TEMPLATE_KEEP_ENV = Template(r"""
+printf "\ntouch .FINISHED" >> ${submit_script_name}
+chmod +x ${submit_script_name}
+
+timeout ${walltime_seconds}s bash ./${submit_script_name} > ${stdout_fname} 2> ${stderr_fname} & 
 sleep 1
 chmod -x ${submit_script_name}
 
@@ -56,6 +86,7 @@ class AiiDAJobFirework(Firework):
             walltime,
             stdout_fname,
             stderr_fname,
+            fresh_env=True,
             priority=100):
         """
         Instantiate a Firework to run jobs prepared by AiiDA daemon on the remote
@@ -75,12 +106,15 @@ class AiiDAJobFirework(Firework):
             '_launch_dir': remote_work_dir,
             '_priority': priority,
         }
+        if fresh_env:
+            template = RUN_SCRIPT_TEMPLATE
+        else:
+            template = RUN_SCRIPT_TEMPLATE_KEEP_ENV
 
-        script = RUN_SCRIPT_TEMPLATE.substitute(
-            submit_script_name=submit_script_name,
-            walltime_seconds=walltime,
-            stdout_fname=stdout_fname,
-            stderr_fname=stderr_fname)
+        script = template.substitute(submit_script_name=submit_script_name,
+                                     walltime_seconds=walltime,
+                                     stdout_fname=stdout_fname,
+                                     stderr_fname=stderr_fname)
         task = ScriptTask(script=script,
                           shell_exe='/bin/bash',
                           fizzle_bad_rc=False,

@@ -15,7 +15,9 @@
     "version": "1.0.0",
     "entry_points": {
         "aiida.schedulers": [
-            "fireworks = aiida_fireworks_scheduler.fwscheduler:FwScheduler"
+            "fireworks = aiida_fireworks_scheduler.fwscheduler:FwScheduler",
+            "fireworks.default = aiida_fireworks_scheduler.fwscheduler:FwScheduler",
+            "fireworks.keepenv = aiida_fireworks_scheduler.fwscheduler:FwSchedulerKeepEnv"
         ],
         "aiida.cmdline.data": [
             "fireworks-scheduler = aiida_fireworks_scheduler.cmdline:fw_cli" 
