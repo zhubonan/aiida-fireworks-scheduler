@@ -12,7 +12,8 @@ import aiida.schedulers
 from aiida.common.exceptions import FeatureNotAvailable
 from aiida.common.folders import SandboxFolder
 from aiida.common.extendeddicts import AttributeDict
-from aiida.schedulers.plugins.sge import SgeScheduler
+from aiida.common.escaping import escape_for_bash
+from aiida.schedulers import Scheduler
 from aiida.schedulers import SchedulerError, SchedulerParsingError
 from aiida.schedulers.datastructures import (JobInfo, JobState,
                                              ParEnvJobResource)
@@ -72,7 +73,7 @@ class FwJobResource(ParEnvJobResource):
         return resources
 
 
-class FwScheduler(SgeScheduler):
+class FwScheduler(Scheduler):
     """
     Scheduler that interfaces with `fireworks.LaunchPad`
     """
@@ -253,6 +254,112 @@ class FwScheduler(SgeScheduler):
         """
         Getting detailed job information. Does not make sense for this scheduler
         """
+        raise FeatureNotAvailable
+
+    def _get_submit_script_header(self, job_tmpl):
+        """
+        Return the submit script header, using the parameters from the
+        job_tmpl.
+
+        Args:
+           job_tmpl: an JobTemplate instance with relevant parameters set.
+
+        Modified and simplied based on that of the SGE scheduler.
+        We need to write the scheduler headers because they will be read in the
+        *upload* step later to submit the job to fireworks' MongoDB server.
+        """
+        # pylint: disable=too-many-statements,too-many-branches
+
+        empty_line = ''
+
+        lines = []
+
+        # I keep it here - it may be a feature we can exploit later
+        if job_tmpl.submit_as_hold:
+            # if isinstance(job_tmpl.submit_as_hold, str):
+            lines.append(f'#$ -h {job_tmpl.submit_as_hold}')
+
+        # leave the name of the job as it is
+        if job_tmpl.job_name:
+
+            lines.append(f'#$ -N {job_tmpl.job_name}')
+
+        if job_tmpl.sched_output_path:
+            lines.append(f'#$ -o {job_tmpl.sched_output_path}')
+
+        if job_tmpl.sched_error_path:
+            lines.append(f'#$ -e {job_tmpl.sched_error_path}')
+
+        if job_tmpl.priority:
+            # Priority of the job.  Format: host-dependent integer.  Default:
+            # zero.   Range:  [-1023,  +1024].  Sets job's Priority
+            # attribute to priority.
+            lines.append(f'#$ -p {job_tmpl.priority}')
+
+        if not job_tmpl.job_resource:
+            raise ValueError(
+                'Job resources (as the tot_num_mpiprocs) are required for the SGE scheduler plugin'
+            )
+        # Setting up the parallel environment
+        lines.append(
+            f'#$ -pe {str(job_tmpl.job_resource.parallel_env)} {int(job_tmpl.job_resource.tot_num_mpiprocs)}'
+        )
+
+        if job_tmpl.max_wallclock_seconds is not None:
+            try:
+                tot_secs = int(job_tmpl.max_wallclock_seconds)
+                if tot_secs <= 0:
+                    raise ValueError
+            except ValueError:
+                raise ValueError(
+                    'max_wallclock_seconds must be '
+                    "a positive integer (in seconds)! It is instead '{}'"
+                    ''.format((job_tmpl.max_wallclock_seconds)))
+            hours = tot_secs // 3600
+            tot_minutes = tot_secs % 3600
+            minutes = tot_minutes // 60
+            seconds = tot_minutes % 60
+            lines.append(f'#$ -l h_rt={hours:02d}:{minutes:02d}:{seconds:02d}')
+
+        if job_tmpl.custom_scheduler_commands:
+            lines.append(job_tmpl.custom_scheduler_commands)
+
+        # TAKEN FROM PBSPRO:
+        # Job environment variables are to be set on one single line.
+        # This is a tough job due to the escaping of commas, etc.
+        # moreover, I am having issues making it work.
+        # Therefore, I assume that this is bash and export variables by
+        # and.
+        if job_tmpl.job_environment:
+            lines.append(empty_line)
+            lines.append('# ENVIRONMENT VARIABLES BEGIN ###')
+            if not isinstance(job_tmpl.job_environment, dict):
+                raise ValueError(
+                    'If you provide job_environment, it must be a dictionary')
+            for key, value in job_tmpl.job_environment.items():
+                lines.append(f'export {key.strip()}={escape_for_bash(value)}')
+            lines.append('# ENVIRONMENT VARIABLES  END  ###')
+            lines.append(empty_line)
+
+        return '\n'.join(lines)
+
+    # Methods need for transport-based interfaes - not used here
+    def _get_submit_command(self, submit_script):
+        raise FeatureNotAvailable
+
+    def _parse_submit_output(self, retval, stdout, stderr):
+        raise FeatureNotAvailable
+
+    def _get_kill_command(self, jobid):
+        raise FeatureNotAvailable
+
+    def _parse_kill_output(self, retval, stdout, stderr):
+        raise FeatureNotAvailable
+
+    def _parse_joblist_output(self, retval, stdout, stderr):
+        raise FeatureNotAvailable
+
+    def _get_joblist_command(self, jobs=None, user=None):
         raise FeatureNotAvailable
 
 
