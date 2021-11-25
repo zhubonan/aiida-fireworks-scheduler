@@ -48,9 +48,9 @@ def duplicate_fe(computer: Computer, include_codes, input_plugin, suffix,
 
     builder = ComputerBuilder.from_computer(computer)
     if 'slurm' in computer.scheduler_type or job_should_keep_env:
-        builder.scheduler = "fireworks.keepenv"
+        builder.scheduler = "fireworks_scheduler.keepenv"
     else:
-        builder.scheduler = "fireworks.default"
+        builder.scheduler = "fireworks_scheduler.default"
 
     echo.echo_info(f"Scheduler for the new computer: {builder.scheduler}")
 
@@ -108,7 +108,10 @@ def duplicate_fe(computer: Computer, include_codes, input_plugin, suffix,
 def generate_worker(computer, mpinp, name, output_file, category):
     """Generate worker fire for a particular computer"""
 
-    if computer.scheduler_type != "fireworks":
+    if computer.scheduler_type not in [
+            "fireworks", "fireworks_scheduler.default",
+            "fireworks_scheduler.keepenv"
+    ]:
         echo.echo_critical(
             "Can only generate worker for computer using 'fireworks' scheduler."
         )

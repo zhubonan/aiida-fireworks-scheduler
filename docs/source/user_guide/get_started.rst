@@ -82,7 +82,7 @@ By default, each AiiDA calculation is performed in a clean login shell on the no
 This is needed when the scheduler does not support running sub-jobs, or using smart wrappers for launching MPI programs. 
 Certain schedulers actually support running sub-jobs inside a single job, such as SLURM. 
 In this case, the ``_aiidasubmit.sh`` should be launched in the same environment rather than in a fresh login shell.
-To select this mode of operation, use the ``fireworks.keepenv`` entrypoint rather than ``fireworks.default`` when setting up scheduler for the ``Computer``.
+To select this mode of operation, use the ``fireworks_scheduler.keepenv`` entrypoint rather than ``fireworks_scheduler.default`` when setting up scheduler for the ``Computer``.
 In this case, a ``--job-should-keep-env`` flag should be passed to ``duplicate-computer`` command. 
 
 

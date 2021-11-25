@@ -119,6 +119,8 @@ def test_duplicate(cmd_test_env):
 
     runner.invoke(duplicate_fe, ["-Y", "localhost"], catch_exceptions=False)
     assert Computer.get(label='localhost-fw')
+    assert Computer.get(
+        label='localhost-fw').scheduler_type == "fireworks_scheduler.default"
 
     runner.invoke(duplicate_fe, ["-Y", "localhost", "--suffix", 'fe'],
                   catch_exceptions=False)
@@ -129,6 +131,14 @@ def test_duplicate(cmd_test_env):
                   catch_exceptions=False)
     assert Computer.get(label='localhost-fc')
     assert Code.get_from_string("bash@localhost-fc")
+
+    runner.invoke(
+        duplicate_fe,
+        ["-Y", "localhost", "--job-should-keep-env", "--suffix", 'env'],
+        catch_exceptions=False)
+    assert Computer.get(label='localhost-env')
+    assert Computer.get(
+        label='localhost-env').scheduler_type == "fireworks_scheduler.keepenv"
 
 
 def test_worker(cmd_test_env):
