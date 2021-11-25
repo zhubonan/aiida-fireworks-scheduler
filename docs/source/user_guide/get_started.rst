@@ -13,6 +13,7 @@ In addition, this also means that AiiDA calculations can be launched alongside t
   1. A working MongoDB server 
   2. Remote cluster is not *fenced*, e.g. the *compute nodes* have internet access at run time.
   3. Remote cluster's schedulers is one of the following:
+
     - SLURM
     - SGE
 
