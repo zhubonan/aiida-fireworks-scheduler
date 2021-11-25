@@ -126,12 +126,17 @@ def test_job_run(dummy_job, launchpad):
 
     ldir.mkdir(parents=True, exist_ok=True)
     (ldir / '_aiidasubmit.sh').write_text("echo Foo > bar")
+    (ldir / '_aiidasubmit.sh').write_text("echo $Foo > baz")
     with keep_cwd():
         launch_rocket(launchpad, fw_id=job_id)
 
+    os.environ['Foo'] = 'baz'
     assert (ldir / 'bar').exists()
     assert (ldir / '_scheduler-stdout.txt').exists()
     assert (ldir / '_scheduler-stderr.txt').exists()
+    assert (ldir / 'baz').read_text() == '\n'
+
+    os.environ.pop('Foo')
 
     fw_dict = lpad.get_fw_dict_by_id(job_id)
     assert fw_dict['state'] == 'COMPLETED'
@@ -143,7 +148,8 @@ def test_job_run(dummy_job, launchpad):
 def test_job_run_with_env(dummy_job_with_env, launchpad):
     """
     Test running a simple job script with
-    `echo Foo > bar`.
+    ``echo $Foo > bar``.
+    where ``Foo`` is set to ``baz``.
 
     """
     lpad = launchpad
@@ -163,7 +169,7 @@ def test_job_run_with_env(dummy_job_with_env, launchpad):
     assert (ldir / 'bar').exists()
     assert (ldir / '_scheduler-stdout.txt').exists()
     assert (ldir / '_scheduler-stderr.txt').exists()
-    assert (ldir / 'bar').read_text() == 'baz'
+    assert (ldir / 'bar').read_text() == 'baz\n'
 
     os.environ.pop('Foo')
     fw_dict = lpad.get_fw_dict_by_id(job_id)
