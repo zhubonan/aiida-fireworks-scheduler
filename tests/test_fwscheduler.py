@@ -140,14 +140,14 @@ def test_job_run(dummy_job, launchpad):
     shutil.rmtree(str(ldir))
 
 
-def test_job_run_with_env(dummy_job, launchpad):
+def test_job_run_with_env(dummy_job_with_env, launchpad):
     """
     Test running a simple job script with
     `echo Foo > bar`.
 
     """
     lpad = launchpad
-    job_id = list(dummy_job.values())[0]
+    job_id = list(dummy_job_with_env.values())[0]
     fw_dict = lpad.get_fw_dict_by_id(job_id)
 
     ldir = Path(fw_dict['spec']['_launch_dir'])

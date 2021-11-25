@@ -2,6 +2,7 @@
 Convenient tools for operations
 """
 from copy import deepcopy
+from aiida.orm.computers import Computer
 
 import click
 
@@ -26,10 +27,18 @@ def fw_cli():
               is_flag=True,
               default=False,
               help='Wether migrate Codes as well.')
+@click.option(
+    '--job-should-keep-env',
+    is_flag=True,
+    default=False,
+    help=
+    'The launch of fireworks should keep the job environment - needed for SLURM.'
+)
 @click.option('--suffix', default="fw", help='Suffix for the new computer')
 @options.DRY_RUN()
 @with_dbenv()
-def duplicate_fe(computer, include_codes, input_plugin, suffix, dry_run):
+def duplicate_fe(computer: Computer, include_codes, input_plugin, suffix,
+                 dry_run, job_should_keep_env):
     """
     Create copies of the existing computer using FwScheduler, add existing
     Code if requested.
@@ -38,7 +47,13 @@ def duplicate_fe(computer, include_codes, input_plugin, suffix, dry_run):
     from aiida.orm.utils.builders.computer import ComputerBuilder
 
     builder = ComputerBuilder.from_computer(computer)
-    builder.scheduler = "fireworks"
+    if 'slurm' in computer.scheduler_type or job_should_keep_env:
+        builder.scheduler = "fireworks.keepenv"
+    else:
+        builder.scheduler = "fireworks.default"
+
+    echo.echo_info(f"Scheduler for the new computer: {builder.scheduler}")
+
     builder.label += "-" + suffix
     builder.description += "(Using Fireworks as the scheduler.)"
     comp = builder.new()

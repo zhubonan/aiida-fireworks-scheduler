@@ -15,7 +15,7 @@ In addition, this also means that AiiDA calculations can be launched alongside t
   3. Remote cluster's schedulers is one of the following:
     - SLURM
     - SGE
-    
+
   4. Python environments are available on the remote cluster (typically through `conda` or `virtualenv`)
   
   The second one is not necessary if local arrangements can be made to for hosting the MongoDB server inside the firewall.
@@ -76,6 +76,13 @@ It is also possible to migrate existing ``Computer`` and associated ``Code`` nod
   verdi data fireworks-scheduler duplicate-computer -Y <computer-name>  --included-codes
 
 The new ``Computer`` will be assigned with a suffix ``-fw``, with original settings copied over, 
+
+By default, each AiiDA calculation is performed in a clean login shell on the node running fireworks. 
+This is needed when the scheduler does not support running sub-jobs, or using smart wrappers for launching MPI programs. 
+Certain schedulers actually support running sub-jobs inside a single job, such as SLURM. 
+In this case, the ``_aiidasubmit.sh`` should be launched in the same environment rather than in a fresh login shell.
+To select this mode of operation, use the ``fireworks.keepenv`` entrypoint rather than ``fireworks.default`` when setting up scheduler for the ``Computer``.
+In this case, a ``--job-should-keep-env`` flag should be passed to ``duplicate-computer`` command. 
 
 
 Running calculations
