@@ -229,8 +229,13 @@ class SlurmAwareness(SchedulerAwareness):
                 # Iterate through each pair
                 for pair in line.split():
                     # Parse each pair
-                    pair_s = pair.split('=')
-                    sinfo_dict.update([(pair_s[0], pair_s[1])])
+                    pair_s = pair.split('=', maxsplit=2)
+                    if len(pair_s) == 2:
+                        sinfo_dict[pair_s[0]] = pair_s[1]
+                    # Empty field - put None
+                    elif len(pair_s) == 1:
+                        sinfo_dict[pair_s[0]] = None
+
         type(self)._task_info = sinfo_dict
         self.task_info = sinfo_dict
 

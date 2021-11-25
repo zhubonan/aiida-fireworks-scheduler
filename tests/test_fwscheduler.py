@@ -125,12 +125,11 @@ def test_job_run(dummy_job, launchpad):
     assert str(ldir) == '/tmp/aiida-test'
 
     ldir.mkdir(parents=True, exist_ok=True)
-    (ldir / '_aiidasubmit.sh').write_text("echo Foo > bar")
-    (ldir / '_aiidasubmit.sh').write_text("echo $Foo > baz")
+    (ldir / '_aiidasubmit.sh').write_text("echo Foo > bar\n echo $Foo > baz")
+    os.environ['Foo'] = 'baz'
     with keep_cwd():
         launch_rocket(launchpad, fw_id=job_id)
 
-    os.environ['Foo'] = 'baz'
     assert (ldir / 'bar').exists()
     assert (ldir / '_scheduler-stdout.txt').exists()
     assert (ldir / '_scheduler-stderr.txt').exists()
