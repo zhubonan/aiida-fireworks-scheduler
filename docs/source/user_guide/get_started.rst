@@ -15,6 +15,7 @@ In addition, this also means that AiiDA calculations can be launched alongside t
   3. Remote cluster's schedulers is one of the following:
     - SLURM
     - SGE
+    
   4. Python environments are available on the remote cluster (typically through `conda` or `virtualenv`)
   
   The second one is not necessary if local arrangements can be made to for hosting the MongoDB server inside the firewall.
