@@ -46,6 +46,15 @@ def duplicate_fe(computer: Computer, include_codes, input_plugin, suffix,
     from aiida import orm
     from aiida.orm.utils.builders.computer import ComputerBuilder
 
+    from fireworks.fw_config import LAUNCHPAD_LOC
+
+    if LAUNCHPAD_LOC is None:
+        echo.echo_critical(
+            'Cannot find the default Fireworks launchpad. '
+            'Please make sure you have configured Fireworks correctly, see '
+            'https://materialsproject.github.io/fireworks/config_tutorial.html'
+        )
+
     builder = ComputerBuilder.from_computer(computer)
     if 'slurm' in computer.scheduler_type or job_should_keep_env:
         builder.scheduler = "fireworks_scheduler.keepenv"
